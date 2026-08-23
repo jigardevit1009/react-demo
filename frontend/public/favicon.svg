@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#4F46E5" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#818CF8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Rounded Shield / Tile -->
+  <rect width="32" height="32" rx="8" fill="url(#primaryGrad)" />
+
+  <!-- Modern Inner Glow -->
+  <rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+
+  <!-- Dynamic Dashboard / Task Productivity Logo Graphic -->
+  <path d="M9 16.5L13.5 21L23 11" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Subtle Glowing Sparkle Accent -->
+  <circle cx="23" cy="9" r="2.2" fill="url(#accentGrad)" />
+</svg>
