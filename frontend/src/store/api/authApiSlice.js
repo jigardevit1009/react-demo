@@ -18,6 +18,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Auth"],
     }),
+    forgotPassword: builder.mutation({
+      query: (resetData) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: resetData,
+      }),
+    }),
     getMe: builder.query({
       query: () => "/auth/me",
       providesTags: ["Auth"],
@@ -25,4 +32,9 @@ export const authApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useGetMeQuery } = authApiSlice;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useForgotPasswordMutation,
+  useGetMeQuery,
+} = authApiSlice;

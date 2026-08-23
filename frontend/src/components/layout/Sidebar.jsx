@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { LayoutDashboard, Users, CheckSquare, LogOut } from "lucide-react";
 import { logout } from "../../store/authSlice";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -14,9 +15,9 @@ function Sidebar() {
   };
 
   const menuItems = [
-    { label: "Dashboard", icon: "📊", path: "/dashboard" },
-    { label: "Employees", icon: "👥", path: "/employees" },
-    { label: "Tasks", icon: "✅", path: "/tasks" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+    { label: "Employees", icon: Users, path: "/employees" },
+    { label: "Tasks", icon: CheckSquare, path: "/tasks" },
   ];
 
   return (
@@ -32,29 +33,32 @@ function Sidebar() {
         <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
           Navigation
         </p>
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? isDark
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "bg-blue-50 text-blue-700 font-semibold"
-                  : isDark
-                  ? "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`
-            }
-          >
-            <span className="text-base">{item.icon}</span>
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
+        {menuItems.map((item) => {
+          const IconComponent = item.icon;
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? isDark
+                      ? "bg-blue-600 text-white font-semibold shadow-xs"
+                      : "bg-blue-50 text-blue-700 font-semibold"
+                    : isDark
+                      ? "text-gray-300 hover:bg-gray-800 hover:text-white"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`
+              }
+            >
+              <IconComponent className="w-4 h-4 shrink-0" />
+              <span>{item.label}</span>
+            </NavLink>
+          );
+        })}
       </nav>
 
-      {/* Redux Logout Button */}
+      {/* Logout Button */}
       <button
         type="button"
         onClick={handleLogout}
@@ -64,8 +68,8 @@ function Sidebar() {
             : "bg-red-50 text-red-700 hover:bg-red-100"
         }`}
       >
-        <span className="text-base">🚪</span>
-        <span>Logout (Redux)</span>
+        <LogOut className="w-4 h-4 shrink-0" />
+        <span>Logout</span>
       </button>
     </aside>
   );

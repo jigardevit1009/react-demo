@@ -1,3 +1,5 @@
+import { X } from "lucide-react";
+
 function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
 
@@ -15,10 +17,11 @@ function Modal({ isOpen, onClose, title, children }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
           <button
+            type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg p-1.5 transition-colors cursor-pointer text-lg leading-none hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg p-1.5 transition-colors cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 

@@ -1,5 +1,17 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import {
+  RotateCw,
+  Plus,
+  Search,
+  X,
+  Check,
+  Undo2,
+  Edit2,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Card from "../../components/common/Card";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
@@ -30,7 +42,6 @@ function TasksPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
 
-  // 1. Fetch paginated tasks from backend
   const { data, isLoading, isFetching, isError, error, refetch } =
     useGetTasksQuery({
       page: currentPage,
@@ -40,7 +51,6 @@ function TasksPage() {
       priority: priorityFilter,
     });
 
-  // 2. Fetch all employees for dynamic Assignee Selection dropdown
   const { data: allEmployeesData } = useGetEmployeesQuery({ all: true });
   const employeeList = Array.isArray(allEmployeesData)
     ? allEmployeesData
@@ -51,12 +61,10 @@ function TasksPage() {
   const totalPages =
     data?.totalPages || Math.ceil(totalTasks / ITEMS_PER_PAGE) || 1;
 
-  // 3. Task Mutations
   const [createTask, { isLoading: isCreating }] = useCreateTaskMutation();
   const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
   const [deleteTask, { isLoading: isDeleting }] = useDeleteTaskMutation();
 
-  // 4. Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [deletingTask, setDeletingTask] = useState(null);
@@ -209,12 +217,20 @@ function TasksPage() {
             size="md"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="cursor-pointer"
+            className="cursor-pointer flex items-center gap-1.5"
           >
-            ↻ Refresh
+            <RotateCw
+              className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`}
+            />
+            <span>Refresh</span>
           </Button>
-          <Button variant="primary" onClick={handleOpenAddModal}>
-            + Create Task
+          <Button
+            variant="primary"
+            onClick={handleOpenAddModal}
+            className="flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Task</span>
           </Button>
         </div>
       </div>
@@ -222,14 +238,27 @@ function TasksPage() {
       {/* Filter Toolbar */}
       <Card>
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="w-full md:w-80">
+          <div className="w-full md:w-80 relative">
             <input
               type="text"
               placeholder="Search tasks or assignees..."
               value={searchTerm}
               onChange={handleSearchChange}
-              className="w-full px-3.5 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+              className="w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
             />
+            <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
@@ -364,23 +393,37 @@ function TasksPage() {
                           task.status === "Completed" ? "secondary" : "outline"
                         }
                         onClick={() => handleToggleComplete(task)}
+                        className="inline-flex items-center gap-1"
                       >
-                        {task.status === "Completed" ? "Undo" : "✓ Done"}
+                        {task.status === "Completed" ? (
+                          <>
+                            <Undo2 className="w-3 h-3" />
+                            <span>Undo</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-3 h-3" />
+                            <span>Done</span>
+                          </>
+                        )}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleOpenEditModal(task)}
+                        className="inline-flex items-center gap-1"
                       >
-                        Edit
+                        <Edit2 className="w-3 h-3" />
+                        <span>Edit</span>
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
                         onClick={() => setDeletingTask(task)}
                       >
-                        Delete
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
                       </Button>
                     </td>
                   </tr>
@@ -415,8 +458,10 @@ function TasksPage() {
                 variant="outline"
                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1 || isFetching}
+                className="flex items-center gap-1"
               >
-                ← Previous
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Previous</span>
               </Button>
 
               <div className="flex items-center gap-1 px-2">
@@ -432,8 +477,10 @@ function TasksPage() {
                   setCurrentPage((p) => Math.min(p + 1, totalPages))
                 }
                 disabled={currentPage >= totalPages || isFetching}
+                className="flex items-center gap-1"
               >
-                Next →
+                <span>Next</span>
+                <ChevronRight className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>
@@ -471,7 +518,6 @@ function TasksPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Direct Employee Name VARCHAR selection */}
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Assign To Employee
@@ -480,7 +526,7 @@ function TasksPage() {
                 name="assignee"
                 value={formData.assignee}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 <option value="Unassigned">Unassigned</option>
                 {employeeList.map((emp) => (

@@ -1,5 +1,15 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import {
+  Search,
+  Plus,
+  RotateCw,
+  Edit2,
+  Trash2,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Card from "../../components/common/Card";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
@@ -23,30 +33,31 @@ const BLANK_FORM = {
 const ITEMS_PER_PAGE = 10;
 
 function EmployeesPage() {
-  // 1. Pagination & Search State
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
   const [departmentFilter, setDepartmentFilter] = useState("ALL");
 
-  // 2. Fetch paginated employees from backend (10 items per chunk)
-  const { data, isLoading, isFetching, isError, error, refetch } = useGetEmployeesQuery({
-    page: currentPage,
-    limit: ITEMS_PER_PAGE,
-    search: debouncedSearchTerm,
-    department: departmentFilter,
-  });
+  const { data, isLoading, isFetching, isError, error, refetch } =
+    useGetEmployeesQuery({
+      page: currentPage,
+      limit: ITEMS_PER_PAGE,
+      search: debouncedSearchTerm,
+      department: departmentFilter,
+    });
 
   const employees = data?.employees || (Array.isArray(data) ? data : []);
   const totalEmployees = data?.total || employees.length;
-  const totalPages = data?.totalPages || Math.ceil(totalEmployees / ITEMS_PER_PAGE) || 1;
+  const totalPages =
+    data?.totalPages || Math.ceil(totalEmployees / ITEMS_PER_PAGE) || 1;
 
-  // 3. Mutations
-  const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
-  const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
-  const [deleteEmployee, { isLoading: isDeleting }] = useDeleteEmployeeMutation();
+  const [createEmployee, { isLoading: isCreating }] =
+    useCreateEmployeeMutation();
+  const [updateEmployee, { isLoading: isUpdating }] =
+    useUpdateEmployeeMutation();
+  const [deleteEmployee, { isLoading: isDeleting }] =
+    useDeleteEmployeeMutation();
 
-  // 4. Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [deletingEmployee, setDeletingEmployee] = useState(null);
@@ -101,7 +112,9 @@ function EmployeesPage() {
       refetch();
     } catch (err) {
       console.error("Failed to create employee:", err);
-      setFormErrors({ general: err?.data?.message || "Failed to create employee" });
+      setFormErrors({
+        general: err?.data?.message || "Failed to create employee",
+      });
     }
   };
 
@@ -114,7 +127,9 @@ function EmployeesPage() {
       refetch();
     } catch (err) {
       console.error("Failed to update employee:", err);
-      setFormErrors({ general: err?.data?.message || "Failed to update employee" });
+      setFormErrors({
+        general: err?.data?.message || "Failed to update employee",
+      });
     }
   };
 
@@ -130,7 +145,6 @@ function EmployeesPage() {
     }
   };
 
-  // Reset to page 1 on filter or search changes
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
@@ -166,12 +180,20 @@ function EmployeesPage() {
             size="md"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="cursor-pointer"
+            className="cursor-pointer flex items-center gap-1.5"
           >
-            ↻ Refresh
+            <RotateCw
+              className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`}
+            />
+            <span>Refresh</span>
           </Button>
-          <Button variant="primary" onClick={handleOpenAddModal}>
-            + Add Employee
+          <Button
+            variant="primary"
+            onClick={handleOpenAddModal}
+            className="flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Employee</span>
           </Button>
         </div>
       </div>
@@ -185,23 +207,27 @@ function EmployeesPage() {
               placeholder="Search by name, role, email..."
               value={searchTerm}
               onChange={handleSearchChange}
-              className="w-full px-3.5 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+              className="w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
             />
+            <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
             {searchTerm && (
               <button
+                type="button"
                 onClick={() => {
                   setSearchTerm("");
                   setCurrentPage(1);
                 }}
-                className="absolute right-3 top-2.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
               >
-                ✕
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Department:</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+              Department:
+            </span>
             <select
               value={departmentFilter}
               onChange={handleDepartmentChange}
@@ -234,12 +260,18 @@ function EmployeesPage() {
         ) : isError ? (
           <div className="text-center py-12 bg-red-50 dark:bg-red-950/40 rounded-lg border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 space-y-2">
             <p className="font-semibold text-sm">Failed to load employees</p>
-            <p className="text-xs text-red-500 dark:text-red-400">{error?.error || "Please check your network connection"}</p>
+            <p className="text-xs text-red-500 dark:text-red-400">
+              {error?.error || "Please check your network connection"}
+            </p>
           </div>
         ) : employees.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/40 rounded-lg border border-dashed border-gray-200 dark:border-gray-800">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No employees found</p>
-            <p className="text-xs text-gray-400 mt-1">Try clearing filters or search terms.</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              No employees found
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Try clearing filters or search terms.
+            </p>
             <Button
               variant="outline"
               size="sm"
@@ -268,8 +300,13 @@ function EmployeesPage() {
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-400">#{emp.id}</td>
+                  <tr
+                    key={emp.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <td className="px-4 py-3 font-mono text-xs text-gray-400">
+                      #{emp.id}
+                    </td>
                     <td className="px-4 py-3">
                       <Link
                         to={`/employees/${emp.id}`}
@@ -279,28 +316,39 @@ function EmployeesPage() {
                       </Link>
                       <p className="text-xs text-gray-400">{emp.email}</p>
                     </td>
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{emp.role}</td>
+                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      {emp.role}
+                    </td>
                     <td className="px-4 py-3">
                       <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded font-medium">
                         {emp.department}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={emp.status === "Active" ? "success" : "warning"}>
+                      <Badge
+                        variant={emp.status === "Active" ? "success" : "warning"}
+                      >
                         {emp.status}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right space-x-2">
-                      <Button size="sm" variant="outline" onClick={() => handleOpenEditModal(emp)}>
-                        Edit
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenEditModal(emp)}
+                        className="inline-flex items-center gap-1"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                        <span>Edit</span>
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
                         onClick={() => setDeletingEmployee(emp)}
                       >
-                        Delete
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
                       </Button>
                     </td>
                   </tr>
@@ -314,11 +362,19 @@ function EmployeesPage() {
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Showing <strong className="font-semibold text-gray-900 dark:text-white">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong> to{" "}
+              Showing{" "}
+              <strong className="font-semibold text-gray-900 dark:text-white">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </strong>{" "}
+              to{" "}
               <strong className="font-semibold text-gray-900 dark:text-white">
                 {Math.min(currentPage * ITEMS_PER_PAGE, totalEmployees)}
               </strong>{" "}
-              of <strong className="font-semibold text-gray-900 dark:text-white">{totalEmployees}</strong> entries
+              of{" "}
+              <strong className="font-semibold text-gray-900 dark:text-white">
+                {totalEmployees}
+              </strong>{" "}
+              entries
             </p>
 
             <div className="flex items-center gap-1.5">
@@ -327,8 +383,10 @@ function EmployeesPage() {
                 variant="outline"
                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1 || isFetching}
+                className="flex items-center gap-1"
               >
-                ← Previous
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Previous</span>
               </Button>
 
               <div className="flex items-center gap-1 px-2">
@@ -340,10 +398,14 @@ function EmployeesPage() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
                 disabled={currentPage >= totalPages || isFetching}
+                className="flex items-center gap-1"
               >
-                Next →
+                <span>Next</span>
+                <ChevronRight className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>
@@ -351,7 +413,11 @@ function EmployeesPage() {
       </Card>
 
       {/* Add Modal */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Employee">
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add New Employee"
+      >
         <form onSubmit={handleAddSubmit} className="space-y-4">
           {formErrors.general && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-xs rounded-lg">
@@ -359,7 +425,9 @@ function EmployeesPage() {
             </div>
           )}
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name *</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Full Name *
+            </label>
             <input
               type="text"
               name="name"
@@ -367,14 +435,22 @@ function EmployeesPage() {
               onChange={handleInputChange}
               placeholder="e.g. Jordan Bell"
               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                formErrors.name ? "border-rose-500 focus:ring-rose-500" : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                formErrors.name
+                  ? "border-rose-500 focus:ring-rose-500"
+                  : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
               }`}
             />
-            {formErrors.name && <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">{formErrors.name}</p>}
+            {formErrors.name && (
+              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
+                {formErrors.name}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address *</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email Address *
+            </label>
             <input
               type="email"
               name="email"
@@ -382,29 +458,45 @@ function EmployeesPage() {
               onChange={handleInputChange}
               placeholder="jordan.b@company.com"
               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                formErrors.email ? "border-rose-500 focus:ring-rose-500" : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                formErrors.email
+                  ? "border-rose-500 focus:ring-rose-500"
+                  : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
               }`}
             />
-            {formErrors.email && <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">{formErrors.email}</p>}
+            {formErrors.email && (
+              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
+                {formErrors.email}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Role *</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Role *
+              </label>
               <input
                 type="text"
                 name="role"
                 value={formData.role}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                  formErrors.role ? "border-rose-500 focus:ring-rose-500" : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                  formErrors.role
+                    ? "border-rose-500 focus:ring-rose-500"
+                    : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
                 }`}
               />
-              {formErrors.role && <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">{formErrors.role}</p>}
+              {formErrors.role && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
+                  {formErrors.role}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Department
+              </label>
               <select
                 name="department"
                 value={formData.department}
@@ -420,7 +512,9 @@ function EmployeesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Status
+            </label>
             <select
               name="status"
               value={formData.status}
@@ -434,7 +528,11 @@ function EmployeesPage() {
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <Button type="button" variant="secondary" onClick={() => setIsAddModalOpen(false)}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsAddModalOpen(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" variant="primary" disabled={isCreating}>
@@ -445,10 +543,16 @@ function EmployeesPage() {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal isOpen={editingEmployee !== null} onClose={() => setEditingEmployee(null)} title={`Edit Employee #${editingEmployee?.id}`}>
+      <Modal
+        isOpen={editingEmployee !== null}
+        onClose={() => setEditingEmployee(null)}
+        title={`Edit Employee #${editingEmployee?.id}`}
+      >
         <form onSubmit={handleEditSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name *</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Full Name *
+            </label>
             <input
               type="text"
               name="name"
@@ -459,7 +563,9 @@ function EmployeesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address *</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email Address *
+            </label>
             <input
               type="email"
               name="email"
@@ -471,7 +577,9 @@ function EmployeesPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Role *</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Role *
+              </label>
               <input
                 type="text"
                 name="role"
@@ -482,7 +590,9 @@ function EmployeesPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Department
+              </label>
               <select
                 name="department"
                 value={formData.department}
@@ -498,7 +608,9 @@ function EmployeesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Status
+            </label>
             <select
               name="status"
               value={formData.status}
@@ -512,7 +624,11 @@ function EmployeesPage() {
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <Button type="button" variant="secondary" onClick={() => setEditingEmployee(null)}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setEditingEmployee(null)}
+            >
               Cancel
             </Button>
             <Button type="submit" variant="primary" disabled={isUpdating}>
@@ -523,16 +639,31 @@ function EmployeesPage() {
       </Modal>
 
       {/* Delete Modal */}
-      <Modal isOpen={deletingEmployee !== null} onClose={() => setDeletingEmployee(null)} title="Confirm Deletion">
+      <Modal
+        isOpen={deletingEmployee !== null}
+        onClose={() => setDeletingEmployee(null)}
+        title="Confirm Deletion"
+      >
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            Are you sure you want to permanently delete employee <strong className="text-gray-900 dark:text-white">{deletingEmployee?.name}</strong>?
+            Are you sure you want to permanently delete employee{" "}
+            <strong className="text-gray-900 dark:text-white">
+              {deletingEmployee?.name}
+            </strong>
+            ?
           </p>
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <Button variant="secondary" onClick={() => setDeletingEmployee(null)}>
+            <Button
+              variant="secondary"
+              onClick={() => setDeletingEmployee(null)}
+            >
               Cancel
             </Button>
-            <Button variant="danger" onClick={handleConfirmDelete} disabled={isDeleting}>
+            <Button
+              variant="danger"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
               {isDeleting ? "Deleting..." : "Delete Employee"}
             </Button>
           </div>

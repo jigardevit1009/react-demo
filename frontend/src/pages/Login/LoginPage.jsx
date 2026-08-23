@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { loginSuccess } from "../../store/authSlice";
 import { useLoginMutation } from "../../store/api/authApiSlice";
 import Button from "../../components/common/Button";
@@ -17,6 +18,7 @@ function LoginPage() {
 
   const [email, setEmail] = useState("jigar.p@company.com");
   const [password, setPassword] = useState("secret123");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -30,10 +32,8 @@ function LoginPage() {
     setErrorMessage("");
 
     try {
-      // Execute genuine JWT login against backend
       const response = await loginApi({ email, password }).unwrap();
 
-      // Dispatch to Redux store
       dispatch(
         loginSuccess({
           user: response.data.user,
@@ -45,7 +45,9 @@ function LoginPage() {
     } catch (err) {
       console.error("Login failed:", err);
       setErrorMessage(
-        err?.data?.message || err?.error || "Invalid credentials. Try secret123 or admin123"
+        err?.data?.message ||
+          err?.error ||
+          "Invalid email or password. Please try again."
       );
     }
   };
@@ -57,14 +59,10 @@ function LoginPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             Productivity<span className="text-blue-600">Hub</span>
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your JWT credentials</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Sign in to access your workspace
+          </p>
         </div>
-
-        {location.state?.from && (
-          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-lg text-xs text-amber-800 dark:text-amber-300">
-            🔒 Please sign in to view <strong>{location.state.from.pathname}</strong>
-          </div>
-        )}
 
         {errorMessage && (
           <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-lg text-xs text-rose-700 dark:text-rose-300">
@@ -77,43 +75,75 @@ function LoginPage() {
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email Address
             </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. jigar.p@company.com"
-              className="w-full px-3.5 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@company.com"
+                className="w-full pl-10 pr-3.5 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <Mail className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="e.g. secret123"
-              className="w-full px-3.5 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                Password
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <Lock className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer focus:outline-none"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           <Button
             type="submit"
             variant="primary"
             disabled={isLoading}
-            className="w-full py-2.5"
+            className="w-full py-2.5 mt-2"
           >
-            {isLoading ? "Verifying Credentials..." : "Sign In"}
+            {isLoading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
 
         <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-center">
-          <p className="text-xs text-gray-400">
-            Demo credentials: <strong className="text-gray-600 dark:text-gray-300">jigar.p@company.com</strong> / <strong className="text-gray-600 dark:text-gray-300">secret123</strong>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline"
+            >
+              Create an account
+            </Link>
           </p>
         </div>
       </div>

@@ -21,7 +21,9 @@ function DashboardPage() {
   const { data: employeesData } = useGetEmployeesQuery({ all: true });
 
   const tasks = Array.isArray(tasksData) ? tasksData : tasksData?.tasks || [];
-  const employees = Array.isArray(employeesData) ? employeesData : employeesData?.employees || [];
+  const employees = Array.isArray(employeesData)
+    ? employeesData
+    : employeesData?.employees || [];
 
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
@@ -33,7 +35,9 @@ function DashboardPage() {
     const totalEmployees = employees.length;
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((t) => t.status === "Completed").length;
-    const inProgressTasks = tasks.filter((t) => t.status === "In Progress").length;
+    const inProgressTasks = tasks.filter(
+      (t) => t.status === "In Progress",
+    ).length;
     const pendingTasks = tasks.filter((t) => t.status === "Pending").length;
     const productivityScore =
       totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -53,7 +57,7 @@ function DashboardPage() {
     let list = tasks;
     if (filter !== "ALL") {
       list = tasks.filter(
-        (task) => task.status?.toUpperCase() === filter.toUpperCase()
+        (task) => task.status?.toUpperCase() === filter.toUpperCase(),
       );
     }
     return list.slice(0, 10);
@@ -70,7 +74,7 @@ function DashboardPage() {
         console.error("Failed to update status:", err);
       }
     },
-    [updateTask, refetch]
+    [updateTask, refetch],
   );
 
   const handleDeleteTask = useCallback(
@@ -82,7 +86,7 @@ function DashboardPage() {
         console.error("Failed to delete task:", err);
       }
     },
-    [deleteTask, refetch]
+    [deleteTask, refetch],
   );
 
   const getPriorityVariant = useCallback((priority) => {
@@ -122,9 +126,6 @@ function DashboardPage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Real-time organizational health & team productivity metrics
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <Link to="/tasks">

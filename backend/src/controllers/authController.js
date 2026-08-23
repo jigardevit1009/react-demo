@@ -6,22 +6,6 @@ import { sendSuccess, sendError } from "../utils/responseHandler.js";
 const JWT_SECRET =
   process.env.JWT_SECRET || "super_secret_jwt_key_react_demo_2026";
 
-// Standard pre-configured accounts
-const DEMO_USERS = [
-  {
-    id: 1,
-    name: "Jigar Patel",
-    email: "jigar.p@company.com",
-    role: "Software Developer",
-  },
-  {
-    id: 2,
-    name: "Admin User",
-    email: "admin@company.com",
-    role: "Administrator",
-  },
-];
-
 /**
  * @desc    Login user with genuine signed JWT token
  * @route   POST /api/auth/login
@@ -36,64 +20,37 @@ export const login = async (req, res) => {
   const cleanEmail = email.toLowerCase().trim();
 
   try {
-    let authenticatedUser = null;
+    const { data: dbUser, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", cleanEmail)
+      .maybeSingle();
 
-    // 1. Try checking in Supabase users table if available
-    try {
-      const { data: dbUser, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", cleanEmail)
-        .single();
-
-      if (!error && dbUser) {
-        const isPasswordValid = await bcrypt.compare(password, dbUser.password);
-        if (isPasswordValid) {
-          authenticatedUser = {
-            id: dbUser.id,
-            name: dbUser.name,
-            email: dbUser.email,
-            role: dbUser.role,
-          };
-        }
-      }
-    } catch {
-      // Supabase users table might not exist yet; continue to fallback
-    }
-
-    // 2. Demo User Fallback (Guarantees instant login for presentations)
-    if (!authenticatedUser) {
-      if (
-        cleanEmail === "jigar.p@company.com" &&
-        (password === "secret123" || password === "admin123")
-      ) {
-        authenticatedUser = DEMO_USERS[0];
-      } else if (
-        cleanEmail === "admin@company.com" &&
-        (password === "admin123" || password === "secret123")
-      ) {
-        authenticatedUser = DEMO_USERS[1];
-      } else if (password === "secret123" || password === "admin123") {
-        // Any custom entered email with standard demo password
-        authenticatedUser = {
-          id: Date.now(),
-          name: cleanEmail.split("@")[0].toUpperCase().replace(".", " "),
-          email: cleanEmail,
-          role: "Administrator",
-        };
-      }
-    }
-
-    // If still not matched, reject
-    if (!authenticatedUser) {
+    if (error || !dbUser) {
       return sendError(
         res,
-        "Invalid credentials. Please use password 'secret123' or 'admin123'",
+        "Invalid email or password. Please verify your credentials or register a new account.",
         401,
       );
     }
 
-    // 3. Generate genuine signed JWT token (valid for 7 days)
+    const isPasswordValid = await bcrypt.compare(password, dbUser.password);
+    if (!isPasswordValid) {
+      return sendError(
+        res,
+        "Invalid email or password. Please verify your credentials or register a new account.",
+        401,
+      );
+    }
+
+    const authenticatedUser = {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    };
+
+    // Generate signed JWT token (valid for 7 days)
     const token = jwt.sign(
       {
         id: authenticatedUser.id,
@@ -117,60 +74,129 @@ export const login = async (req, res) => {
 };
 
 /**
- * @desc    Register a new user
+ * @desc    Register a new user in Supabase
  * @route   POST /api/auth/register
  */
 export const register = async (req, res) => {
   const { name, email, password, role = "Developer" } = req.body;
 
   if (!name || !email || !password) {
-    return sendError(res, "Name, email, and password are required", 400);
+    return sendError(res, "Full name, email, and password are required", 400);
+  }
+
+  if (password.length < 6) {
+    return sendError(res, "Password must be at least 6 characters long", 400);
   }
 
   const cleanEmail = email.toLowerCase().trim();
 
   try {
+    // 1. Check if user already exists
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", cleanEmail)
+      .maybeSingle();
+
+    if (existingUser) {
+      return sendError(
+        res,
+        "An account with this email already exists. Please sign in.",
+        409,
+      );
+    }
+
+    // 2. Hash password with bcrypt salt
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Try inserting into Supabase
-    try {
-      const { data: newUser } = await supabase
-        .from("users")
-        .insert([
-          {
-            name,
-            email: cleanEmail,
-            password: hashedPassword,
-            role,
-          },
-        ])
-        .select("id, name, email, role")
-        .single();
+    // 3. Insert into Supabase users table
+    const { data: newUser, error } = await supabase
+      .from("users")
+      .insert([
+        {
+          name: name.trim(),
+          email: cleanEmail,
+          password: hashedPassword,
+          role,
+        },
+      ])
+      .select("id, name, email, role")
+      .single();
 
-      if (newUser) {
-        const token = jwt.sign(newUser, JWT_SECRET, { expiresIn: "7d" });
-        return sendSuccess(
-          res,
-          { user: newUser, token },
-          "Account registered successfully",
-          201,
-        );
-      }
-    } catch {
-      // Fallback if users table is not yet migrated
+    if (error || !newUser) {
+      return sendError(
+        res,
+        "Failed to create account in database: " + (error?.message || "Unknown error"),
+        500,
+        error,
+      );
     }
 
-    const transientUser = { id: Date.now(), name, email: cleanEmail, role };
-    const token = jwt.sign(transientUser, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(newUser, JWT_SECRET, { expiresIn: "7d" });
+
     return sendSuccess(
       res,
-      { user: transientUser, token },
+      { user: newUser, token },
       "Account registered successfully",
       201,
     );
   } catch (error) {
     return sendError(res, "Registration failed", 500, error);
+  }
+};
+
+/**
+ * @desc    Reset / Forgot Password for existing user
+ * @route   POST /api/auth/forgot-password
+ */
+export const forgotPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return sendError(res, "Email and new password are required", 400);
+  }
+
+  if (newPassword.length < 6) {
+    return sendError(res, "New password must be at least 6 characters long", 400);
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+
+  try {
+    // 1. Check if user exists
+    const { data: existingUser, error: findError } = await supabase
+      .from("users")
+      .select("id, email, name")
+      .eq("email", cleanEmail)
+      .maybeSingle();
+
+    if (findError || !existingUser) {
+      return sendError(res, "No account found with this email address", 404);
+    }
+
+    // 2. Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // 3. Update password in Supabase
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ password: hashedPassword, updated_at: new Date() })
+      .eq("id", existingUser.id);
+
+    if (updateError) {
+      return sendError(res, "Failed to update password in database", 500, updateError);
+    }
+
+    return sendSuccess(
+      res,
+      { email: existingUser.email },
+      "Password has been reset successfully. You can now log in with your new password.",
+      200,
+    );
+  } catch (error) {
+    return sendError(res, "Password reset failed", 500, error);
   }
 };
 

@@ -5,10 +5,14 @@ import LoadingSpinner from "./components/common/LoadingSpinner";
 
 // Route-Based Code Splitting: Lazy load each page on demand
 const LoginPage = lazy(() => import("./pages/Login/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/Login/RegisterPage"));
+const ForgotPasswordPage = lazy(
+  () => import("./pages/Login/ForgotPasswordPage")
+);
 const DashboardPage = lazy(() => import("./pages/Dashboard/DashboardPage"));
 const EmployeesPage = lazy(() => import("./pages/Employees/EmployeesPage"));
 const EmployeeDetailPage = lazy(
-  () => import("./pages/Employees/EmployeeDetailPage"),
+  () => import("./pages/Employees/EmployeeDetailPage")
 );
 const TasksPage = lazy(() => import("./pages/Tasks/TasksPage"));
 const TaskDetailPage = lazy(() => import("./pages/Tasks/TaskDetailPage"));
@@ -18,8 +22,10 @@ function App() {
   return (
     <Suspense fallback={<LoadingSpinner message="Initializing workspace..." />}>
       <Routes>
-        {/* 1. Public Route: Login */}
+        {/* 1. Public Routes: Login, Register, Forgot Password */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* 2. Protected Routes (Wrapped inside <ProtectedRoute /> and <MainLayout />) */}
         <Route element={<ProtectedRoute />}>
