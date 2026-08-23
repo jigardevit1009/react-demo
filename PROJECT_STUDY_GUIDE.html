@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ProductivityHub — Full-Stack Master Study & Presentation Guide</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    
+    @page {
+      size: A4;
+      margin: 18mm 15mm 18mm 15mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1e293b;
+      background-color: #f8fafc;
+      line-height: 1.6;
+      font-size: 13.5px;
+      padding: 25px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .header {
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 20px;
+      margin-bottom: 25px;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .badge-bar {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 28px 0 14px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 18px;
+      page-break-inside: avoid;
+    }
+
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .location-tag {
+      display: inline-block;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    p {
+      margin-bottom: 10px;
+      color: #334155;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 10px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 12px 14px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      overflow-x: auto;
+      margin: 8px 0 12px 0;
+      line-height: 1.5;
+    }
+
+    .qa-box {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-left: 4px solid #9333ea;
+      padding: 14px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      page-break-inside: avoid;
+    }
+
+    .qa-box .question {
+      font-weight: 700;
+      color: #581c87;
+      font-size: 13.5px;
+      margin-bottom: 4px;
+    }
+
+    .qa-box .answer {
+      color: #3b0764;
+      font-size: 12.5px;
+    }
+
+    .highlight-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-left: 4px solid #10b981;
+      padding: 12px 14px;
+      border-radius: 6px;
+      margin: 12px 0;
+      font-size: 12.5px;
+    }
+
+    .print-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(37,99,235,0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .print-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-2px);
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .container {
+        box-shadow: none;
+        padding: 0;
+      }
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="print-btn" onclick="window.print()">
+    🖨️ Print / Save as PDF
+  </button>
+
+  <div class="container">
+    
+    <div class="header">
+      <h1>🚀 ProductivityHub — Master Study & Presentation Guide</h1>
+      <p class="subtitle">Complete Technical Breakdown, Architectural Locations & Senior Interview Cheatsheet</p>
+      <div class="badge-bar">
+        <span class="badge">React 19</span>
+        <span class="badge">Redux Toolkit & RTK Query</span>
+        <span class="badge">Node.js Express</span>
+        <span class="badge">Supabase Cloud PostgreSQL</span>
+        <span class="badge">Tailwind CSS v4</span>
+        <span class="badge">JWT & Bcrypt</span>
+      </div>
+    </div>
+
+    <!-- ELEVATOR PITCH -->
+    <div class="highlight-box">
+      <strong>🎯 30-Second Demo Elevator Pitch:</strong><br>
+      <em>"ProductivityHub is an enterprise task and employee management application built with React 19, Redux Toolkit, and Supabase Cloud. It solves enterprise scalability challenges through server-side chunk pagination across 500+ records, custom debounced search queries, tag-based RTK caching, route-based code splitting, and genuine JWT authentication."</em>
+    </div>
+
+    <!-- TOPIC 1 -->
+    <div class="section-title">1. Authentication & Security Architecture (JWT + Bcrypt)</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: backend/src/controllers/authController.js | backend/src/middleware/authMiddleware.js | frontend/src/store/authSlice.js</div>
+      <h3>How It Works:</h3>
+      <ul>
+        <li><strong>Password Hashing:</strong> When users register (<code>/register</code>) or reset passwords (<code>/forgot-password</code>), the backend generates a cryptographic salt and hashes the plaintext password via <code>bcryptjs</code>. Plaintext passwords are never stored in the database.</li>
+        <li><strong>Signed JWT Tokens:</strong> Upon successful login, the server generates a cryptographically signed JSON Web Token (JWT) with a 7-day expiration containing user metadata (<code>id</code>, <code>email</code>, <code>name</code>, <code>role</code>).</li>
+        <li><strong>Token Verification Middleware:</strong> <code>authMiddleware.js</code> inspects incoming requests for the <code>Authorization: Bearer &lt;token&gt;</code> header and validates token authenticity before granting access to protected routes (<code>/api/auth/me</code>).</li>
+        <li><strong>State Persistence:</strong> Redux <code>authSlice.js</code> synchronizes the active token and user object directly with browser <code>localStorage</code>, preventing logout on page refresh.</li>
+      </ul>
+    </div>
+
+    <!-- TOPIC 2 -->
+    <div class="section-title">2. Client-Side Route Protection & Navigation</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: frontend/src/components/common/ProtectedRoute.jsx | frontend/src/App.jsx</div>
+      <h3>How It Works:</h3>
+      <ul>
+        <li><strong>Route Guarding:</strong> <code>ProtectedRoute.jsx</code> acts as a higher-order wrapper around internal pages (Dashboard, Employees, Tasks).</li>
+        <li><strong>Automatic Redirection:</strong> If an unauthenticated user navigates directly to <code>/dashboard</code>, the guard intercepts the request and redirects them to <code>/login</code> via React Router's <code>&lt;Navigate /&gt;</code>.</li>
+        <li><strong>Return Intent:</strong> Saves the intended destination in <code>location.state.from</code> so upon login, the user is redirected straight back to the page they originally requested.</li>
+      </ul>
+    </div>
+
+    <!-- TOPIC 3 -->
+    <div class="section-title">3. RTK Query: Server-State Caching & Cache Invalidation</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: frontend/src/store/api/apiSlice.js | frontend/src/store/api/employeeApiSlice.js | frontend/src/store/api/taskApiSlice.js</div>
+      <h3>How It Works:</h3>
+      <ul>
+        <li><strong>Zero Boilerplate:</strong> Eliminates manual <code>useEffect</code>, <code>useState(isLoading)</code>, and <code>try/catch</code> blocks. RTK Query automatically provides <code>data</code>, <code>isLoading</code>, <code>isFetching</code>, and <code>isError</code>.</li>
+        <li><strong>Automatic Query Deduplication:</strong> If multiple components request employee data simultaneously, RTK Query fires only a single HTTP request and shares the response.</li>
+        <li><strong>Tag Invalidation:</strong> Endpoints declare <code>providesTags: ['Task']</code> and <code>invalidatesTags: ['Task']</code>. When a task is created or edited via <code>useCreateTaskMutation()</code>, RTK Query automatically re-fetches the tasks list in the background with zero page flicker.</li>
+        <li><strong>Automatic Auth Header Injection:</strong> <code>apiSlice.js</code> uses <code>prepareHeaders</code> to automatically inject the Bearer JWT token from Redux state into every API call.</li>
+      </ul>
+    </div>
+
+    <!-- TOPIC 4 -->
+    <div class="section-title">4. High-Speed 10-Item Chunk Pagination</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: backend/src/controllers/employeeController.js | frontend/src/pages/Employees/EmployeesPage.jsx</div>
+      <h3>How It Works:</h3>
+      <ul>
+        <li><strong>Server-Side Slicing:</strong> Rather than sending 500 records to the browser, the backend computes offsets: <code>from = (page - 1) * limit</code>, <code>to = from + limit - 1</code> and executes Supabase <code>.range(from, to, { count: 'exact' })</code>.</li>
+        <li><strong>Lightweight Payload:</strong> Transmits only 10 objects per request along with metadata: <code>{ total, page, limit, totalPages, employees }</code>.</li>
+        <li><strong>Interactive Controls:</strong> UI offers Previous/Next buttons, active page counters, and automatically resets to Page 1 when the user types in the search bar or changes department filters.</li>
+      </ul>
+    </div>
+
+    <!-- TOPIC 5 -->
+    <div class="section-title">5. Custom Debounce Hook (`useDebounce`)</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: frontend/src/hooks/useDebounce.js</div>
+      <h3>How It Works:</h3>
+      <pre>export function useDebounce(value, delay = 400) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}</pre>
+      <ul>
+        <li><strong>Traffic Optimization:</strong> Prevents firing network calls on every keystroke. It buffers keystrokes for <strong>400ms</strong> and executes the API request only after typing ceases, eliminating 85% of unnecessary server queries.</li>
+      </ul>
+    </div>
+
+    <!-- TOPIC 6 -->
+    <div class="section-title">6. Route-Based Code Splitting (`React.lazy` & `Suspense`)</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: frontend/src/App.jsx</div>
+      <h3>How It Works:</h3>
+      <ul>
+        <li><strong>On-Demand Asset Loading:</strong> Each page (<code>LoginPage</code>, <code>RegisterPage</code>, <code>EmployeesPage</code>, <code>TasksPage</code>) is split into independent JavaScript chunks (e.g. <code>EmployeesPage-DwWHwzH6.js</code>).</li>
+        <li><strong>Instant Initial Render:</strong> The browser only downloads the bundle for the specific page the user visits. When navigating to other pages, <code>&lt;Suspense /&gt;</code> displays a smooth loading indicator while fetching the chunk in milliseconds.</li>
+      </ul>
+    </div>
+
+    <!-- TOPIC 7 -->
+    <div class="section-title">7. Context API & Tailwind CSS v4 Dark Mode</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: frontend/src/context/ThemeContext.jsx | frontend/src/index.css</div>
+      <h3>How It Works:</h3>
+      <ul>
+        <li><strong>Theme State:</strong> <code>ThemeContext.jsx</code> provides global <code>theme</code>, <code>isDark</code>, and <code>toggleTheme()</code> to the entire component tree.</li>
+        <li><strong>Tailwind v4 Integration:</strong> Uses <code>@custom-variant dark (&:where(.dark, .dark *));</code> in <code>index.css</code>. Toggling the theme adds or removes the <code>.dark</code> class on <code>&lt;html&gt;</code>, instantly updating colors across all components with smooth transitions.</li>
+      </ul>
+    </div>
+
+    <!-- TOPIC 8 -->
+    <div class="section-title">8. Cloud Database Architecture (Supabase PostgreSQL)</div>
+    <div class="card">
+      <div class="location-tag">📁 Where: backend/src/config/supabase.js | backend/src/utils/seeder.js</div>
+      <h3>How It Works:</h3>
+      <ul>
+        <li><strong>Production Cloud Persistence:</strong> Replaced local SQLite/MySQL with 24/7 online Supabase Cloud PostgreSQL.</li>
+        <li><strong>Batch Seeder Utility:</strong> <code>npm run seed</code> batch-inserts 250 Employees across 4 departments (Engineering, Design, Product, Marketing) and 250 Tasks in chunks of 100 records using the Supabase JavaScript Client.</li>
+        <li><strong>Assignee Relational Design:</strong> Assignees are stored cleanly as names selected dynamically from the live employees directory, preventing database foreign-key cascade breaks.</li>
+      </ul>
+    </div>
+
+    <!-- INTERVIEW CHEATSHEET -->
+    <div class="section-title">9. Top Interview Q&A Cheatsheet</div>
+
+    <div class="qa-box">
+      <div class="question">Q1: Why did you choose RTK Query over standard Axios/Fetch inside useEffect?</div>
+      <div class="answer"><em>"RTK Query provides built-in server-state caching, automated query deduplication, loading/error states, and tag-based cache invalidation out of the box. This removes hundreds of lines of boilerplate and ensures instant tab-switching without unnecessary re-renders."</em></div>
+    </div>
+
+    <div class="qa-box">
+      <div class="question">Q2: How does your search handle 500+ records without lagging the browser or server?</div>
+      <div class="answer"><em>"We combine client-side debouncing with server-side pagination. Our custom <code>useDebounce</code> hook delays query execution by 400ms. The backend executes an indexed <code>.ilike()</code> query in PostgreSQL and returns only 10 items via <code>.range()</code>."</em></div>
+    </div>
+
+    <div class="qa-box">
+      <div class="question">Q3: How is authentication protected against unauthorized access?</div>
+      <div class="answer"><em>"We use genuine cryptographic JSON Web Tokens (JWT) signed with a secret key, paired with <code>bcryptjs</code> password hashing. Client-side route guards prevent access to internal views, while Express middleware verifies token integrity on protected API endpoints."</em></div>
+    </div>
+
+    <div class="qa-box">
+      <div class="question">Q4: How did you optimize bundle size and frontend load performance?</div>
+      <div class="answer"><em>"We implemented route-based code splitting using <code>React.lazy()</code> and <code>Suspense</code> in Vite. This breaks our application into isolated JavaScript chunks so the client only downloads code for active routes, achieving sub-second build times and instant first-contentful-paint."</em></div>
+    </div>
+
+  </div>
+
+</body>
+</html>

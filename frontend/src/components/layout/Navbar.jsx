@@ -23,14 +23,6 @@ function Navbar() {
         <h2 className="text-lg font-bold tracking-tight">
           Productivity<span className="text-blue-500">Hub</span>
         </h2>
-        <span
-          className={`text-xs px-2.5 py-0.5 rounded-md font-medium flex items-center gap-1 ${
-            isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          <Sparkles className="w-3 h-3 text-blue-500" />
-          <span>Workspace</span>
-        </span>
       </div>
 
       {/* Right Controls: Theme Toggle + User Profile */}
