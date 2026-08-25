@@ -3,13 +3,37 @@ import { Link } from "react-router-dom";
 import Card from "../../components/common/Card";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
-import MetricCard from "../Dashboard/MetricCard";
+import MetricCard from "./MetricCard";
 import {
   useGetTasksQuery,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
 } from "../../store/api/taskApiSlice";
 import { useGetEmployeesQuery } from "../../store/api/employeeApiSlice";
+import { Trash2 } from "lucide-react";
+
+// Pure helper functions moved outside component to avoid re-creation on every render
+const getPriorityVariant = (priority) => {
+  switch (priority) {
+    case "High":
+      return "danger";
+    case "Medium":
+      return "warning";
+    default:
+      return "info";
+  }
+};
+
+const getStatusVariant = (status) => {
+  switch (status) {
+    case "Completed":
+      return "success";
+    case "In Progress":
+      return "info";
+    default:
+      return "neutral";
+  }
+};
 
 function DashboardPage() {
   const {
@@ -20,10 +44,17 @@ function DashboardPage() {
   } = useGetTasksQuery({ all: true });
   const { data: employeesData } = useGetEmployeesQuery({ all: true });
 
-  const tasks = Array.isArray(tasksData) ? tasksData : tasksData?.tasks || [];
-  const employees = Array.isArray(employeesData)
-    ? employeesData
-    : employeesData?.employees || [];
+  const tasks = useMemo(
+    () => (Array.isArray(tasksData) ? tasksData : tasksData?.tasks || []),
+    [tasksData]
+  );
+  const employees = useMemo(
+    () =>
+      Array.isArray(employeesData)
+        ? employeesData
+        : employeesData?.employees || [],
+    [employeesData]
+  );
 
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
@@ -88,28 +119,6 @@ function DashboardPage() {
     },
     [deleteTask, refetch],
   );
-
-  const getPriorityVariant = useCallback((priority) => {
-    switch (priority) {
-      case "High":
-        return "danger";
-      case "Medium":
-        return "warning";
-      default:
-        return "info";
-    }
-  }, []);
-
-  const getStatusVariant = useCallback((status) => {
-    switch (status) {
-      case "Completed":
-        return "success";
-      case "In Progress":
-        return "info";
-      default:
-        return "neutral";
-    }
-  }, []);
 
   return (
     <div className="space-y-8">
@@ -288,10 +297,11 @@ function DashboardPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
                         onClick={() => handleDeleteTask(task.id)}
                       >
-                        ✕
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
                       </Button>
                     </td>
                   </tr>
