@@ -29,7 +29,7 @@ const BLANK_TASK = {
   title: "",
   assignee: "Unassigned",
   priority: "Medium",
-  status: "Pending",
+  status: "In Progress",
   dueDate: "2026-08-26",
 };
 
@@ -90,7 +90,7 @@ function TasksPage() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-  const [deletingTask, setDeletingTask] = useState(null);
+  const [removingTask, setRemovingTask] = useState(null);
 
   const [formData, setFormData] = useState(BLANK_TASK);
   const [formErrors, setFormErrors] = useState({});
@@ -120,7 +120,7 @@ function TasksPage() {
       title: task.title,
       assignee: task.assignee || "Unassigned",
       priority: task.priority || "Medium",
-      status: task.status || "Pending",
+      status: task.status || "In Progress",
       dueDate: task.dueDate || "2026-08-26",
     });
     setFormErrors({});
@@ -163,17 +163,17 @@ function TasksPage() {
         console.error("Failed to toggle status:", err);
       }
     },
-    [updateTask, refetch]
+    [updateTask, refetch],
   );
 
-  const handleConfirmDelete = async () => {
-    if (deletingTask) {
+  const handleConfirmRemove = async () => {
+    if (removingTask) {
       try {
-        await deleteTask(deletingTask.id).unwrap();
-        setDeletingTask(null);
+        await deleteTask(removingTask.id).unwrap();
+        setRemovingTask(null);
         refetch();
       } catch (err) {
-        console.error("Failed to delete task:", err);
+        console.error("Failed to remove task:", err);
       }
     }
   };
@@ -208,9 +208,6 @@ function TasksPage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Create, assign, and track project deliverables across the organization
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -269,8 +266,8 @@ function TasksPage() {
               className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="ALL">All Statuses</option>
-              <option value="PENDING">Pending</option>
               <option value="IN PROGRESS">In Progress</option>
+              <option value="PENDING">Pending</option>
               <option value="COMPLETED">Completed</option>
             </select>
 
@@ -300,7 +297,9 @@ function TasksPage() {
         {isLoading ? (
           <div className="text-center py-12 text-gray-500 space-y-2">
             <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
-            <p className="text-sm font-medium">Loading tasks from database...</p>
+            <p className="text-sm font-medium">
+              Loading tasks from database...
+            </p>
           </div>
         ) : isError ? (
           <div className="text-center py-12 bg-red-50 dark:bg-red-950/40 rounded-lg border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 space-y-2">
@@ -336,13 +335,13 @@ function TasksPage() {
             <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
               <thead className="bg-gray-50 dark:bg-gray-800/60 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200 dark:border-gray-800">
                 <tr>
-                  <th className="px-4 py-3">Task ID</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Assigned To</th>
-                  <th className="px-4 py-3">Priority</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Due Date</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Task ID</th>
+                  <th className="px-4 py-3 min-w-[260px]">Title</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Assigned To</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Priority</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Status</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Due Date</th>
+                  <th className="px-4 py-3 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -351,12 +350,12 @@ function TasksPage() {
                     key={task.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-gray-400">
+                    <td className="px-4 py-3 font-mono text-xs text-gray-400 whitespace-nowrap">
                       <Link
                         to={`/tasks/${task.id}`}
                         className="font-bold text-blue-600 dark:text-blue-400 hover:underline"
                       >
-                        #{task.id}
+                        {task.id}
                       </Link>
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
@@ -371,61 +370,63 @@ function TasksPage() {
                         {task.title}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300 font-medium">
+                    <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">
                       {task.assignee || "Unassigned"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <Badge variant={getPriorityVariant(task.priority)}>
                         {task.priority}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <Badge variant={getStatusVariant(task.status)}>
                         {task.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-xs font-mono text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {task.dueDate || "No deadline"}
                     </td>
-                    <td className="px-4 py-3 text-right space-x-2">
-                      <Button
-                        size="sm"
-                        variant={
-                          task.status === "Completed" ? "secondary" : "outline"
-                        }
-                        onClick={() => handleToggleComplete(task)}
-                        className="inline-flex items-center gap-1"
-                      >
-                        {task.status === "Completed" ? (
-                          <>
-                            <Undo2 className="w-3 h-3" />
-                            <span>Undo</span>
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-3 h-3" />
-                            <span>Done</span>
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenEditModal(task)}
-                        className="inline-flex items-center gap-1"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                        <span>Edit</span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
-                        onClick={() => setDeletingTask(task)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span>Delete</span>
-                      </Button>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant={
+                            task.status === "Completed" ? "secondary" : "outline"
+                          }
+                          onClick={() => handleToggleComplete(task)}
+                          className="inline-flex items-center gap-1"
+                        >
+                          {task.status === "Completed" ? (
+                            <>
+                              <Undo2 className="w-3 h-3" />
+                              <span>Undo</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3 h-3" />
+                              <span>Done</span>
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenEditModal(task)}
+                          className="inline-flex items-center gap-1"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          <span>Edit</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
+                          onClick={() => setRemovingTask(task)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Remove</span>
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -561,7 +562,7 @@ function TasksPage() {
                 name="priority"
                 value={formData.priority}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -577,10 +578,10 @@ function TasksPage() {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
+                <option value="In Progress">In Progress (Default)</option>
                 <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
               </select>
             </div>
@@ -605,7 +606,7 @@ function TasksPage() {
       <Modal
         isOpen={editingTask !== null}
         onClose={() => setEditingTask(null)}
-        title={`Edit Task #${editingTask?.id}`}
+        title={`Edit Task ${editingTask?.id}`}
       >
         <form onSubmit={handleEditSubmit} className="space-y-4">
           <div>
@@ -630,7 +631,7 @@ function TasksPage() {
                 name="assignee"
                 value={formData.assignee}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 <option value="Unassigned">Unassigned</option>
                 {employeeList.map((emp) => (
@@ -664,7 +665,7 @@ function TasksPage() {
                 name="priority"
                 value={formData.priority}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -680,10 +681,10 @@ function TasksPage() {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
-                <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
+                <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>
               </select>
             </div>
@@ -704,30 +705,30 @@ function TasksPage() {
         </form>
       </Modal>
 
-      {/* 3. DELETE TASK MODAL */}
+      {/* 3. REMOVE TASK MODAL */}
       <Modal
-        isOpen={deletingTask !== null}
-        onClose={() => setDeletingTask(null)}
-        title="Confirm Task Deletion"
+        isOpen={removingTask !== null}
+        onClose={() => setRemovingTask(null)}
+        title="Confirm Task Removal"
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            Are you sure you want to permanently delete task{" "}
+            Are you sure you want to remove task{" "}
             <strong className="text-gray-900 dark:text-white">
-              {deletingTask?.title}
+              {removingTask?.title}
             </strong>
             ?
           </p>
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <Button variant="secondary" onClick={() => setDeletingTask(null)}>
+            <Button variant="secondary" onClick={() => setRemovingTask(null)}>
               Cancel
             </Button>
             <Button
               variant="danger"
-              onClick={handleConfirmDelete}
+              onClick={handleConfirmRemove}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete Task"}
+              {isDeleting ? "Removing..." : "Remove Task"}
             </Button>
           </div>
         </div>
