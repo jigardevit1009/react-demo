@@ -1,10 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Read persisted authentication state from localStorage (or default to logged out)
+// Helper to safely parse JSON from localStorage
+const getStoredUser = () => {
+  try {
+    const item = localStorage.getItem("auth_user");
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    console.warn("Failed to parse stored auth user:", error);
+    localStorage.removeItem("auth_user");
+    return null;
+  }
+};
+
 const savedToken = localStorage.getItem("auth_token");
-const savedUser = localStorage.getItem("auth_user")
-  ? JSON.parse(localStorage.getItem("auth_user"))
-  : null;
+const savedUser = getStoredUser();
 
 const initialState = {
   user: savedUser,
