@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Card from "../../components/common/Card";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
+import Modal from "../../components/common/Modal";
 import MetricCard from "./MetricCard";
 import {
   useGetTasksQuery,
@@ -57,9 +58,10 @@ function DashboardPage() {
   );
 
   const [updateTask] = useUpdateTaskMutation();
-  const [deleteTask] = useDeleteTaskMutation();
+  const [deleteTask, { isLoading: isDeleting }] = useDeleteTaskMutation();
 
   const [filter, setFilter] = useState("ALL");
+  const [removingTask, setRemovingTask] = useState(null);
 
   // Recalculate derived metrics
   const metrics = useMemo(() => {
@@ -108,17 +110,17 @@ function DashboardPage() {
     [updateTask, refetch],
   );
 
-  const handleDeleteTask = useCallback(
-    async (taskId) => {
+  const handleConfirmRemove = async () => {
+    if (removingTask) {
       try {
-        await deleteTask(taskId).unwrap();
+        await deleteTask(removingTask.id).unwrap();
+        setRemovingTask(null);
         refetch();
       } catch (err) {
-        console.error("Failed to delete task:", err);
+        console.error("Failed to remove task:", err);
       }
-    },
-    [deleteTask, refetch],
-  );
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -238,12 +240,12 @@ function DashboardPage() {
             <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
               <thead className="bg-gray-50 dark:bg-gray-800/60 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200 dark:border-gray-800">
                 <tr>
-                  <th className="px-4 py-3">Task ID</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Assignee</th>
-                  <th className="px-4 py-3">Priority</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Task ID</th>
+                  <th className="px-4 py-3 min-w-[240px]">Title</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Assignee</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Priority</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Status</th>
+                  <th className="px-4 py-3 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -252,12 +254,12 @@ function DashboardPage() {
                     key={task.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-gray-400">
+                    <td className="px-4 py-3 font-mono text-xs text-gray-400 whitespace-nowrap">
                       <Link
                         to={`/tasks/${task.id}`}
                         className="text-blue-600 hover:underline font-bold"
                       >
-                        #{task.id}
+                        {task.id}
                       </Link>
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
@@ -271,38 +273,40 @@ function DashboardPage() {
                         {task.title}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
                       {task.assignee}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <Badge variant={getPriorityVariant(task.priority)}>
                         {task.priority}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <Badge variant={getStatusVariant(task.status)}>
                         {task.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-right space-x-2">
-                      <Button
-                        size="sm"
-                        variant={
-                          task.status === "Completed" ? "secondary" : "outline"
-                        }
-                        onClick={() => handleToggleComplete(task)}
-                      >
-                        {task.status === "Completed" ? "Undo" : "✓ Done"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
-                        onClick={() => handleDeleteTask(task.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span>Delete</span>
-                      </Button>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant={
+                            task.status === "Completed" ? "secondary" : "outline"
+                          }
+                          onClick={() => handleToggleComplete(task)}
+                        >
+                          {task.status === "Completed" ? "Undo" : "✓ Done"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
+                          onClick={() => setRemovingTask(task)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Remove</span>
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -311,6 +315,38 @@ function DashboardPage() {
           </div>
         )}
       </Card>
+
+      {/* Remove Task Confirmation Modal */}
+      <Modal
+        isOpen={removingTask !== null}
+        onClose={() => setRemovingTask(null)}
+        title="Confirm Task Removal"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Are you sure you want to remove task{" "}
+            <strong className="text-gray-900 dark:text-white">
+              {removingTask?.title}
+            </strong>
+            ?
+          </p>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <Button
+              variant="secondary"
+              onClick={() => setRemovingTask(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleConfirmRemove}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Removing..." : "Remove Task"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

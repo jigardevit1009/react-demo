@@ -11,11 +11,13 @@ function Card({ title, subtitle, badge, children, className = "" }) {
           : "bg-white border-gray-200 text-gray-900"
       } ${className}`}
     >
-      {(title || badge) && (
+      {title && (
         <div className="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
           <div>
             {title && (
-              <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-gray-800"}`}>
+              <h3
+                className={`text-base font-bold ${isDark ? "text-white" : "text-gray-800"}`}
+              >
                 {title}
               </h3>
             )}
@@ -23,17 +25,6 @@ function Card({ title, subtitle, badge, children, className = "" }) {
               <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
             )}
           </div>
-          {badge && (
-            <span
-              className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                isDark
-                  ? "bg-gray-800 text-blue-400 border border-gray-700"
-                  : "bg-blue-50 text-blue-700"
-              }`}
-            >
-              {badge}
-            </span>
-          )}
         </div>
       )}
       <div>{children}</div>

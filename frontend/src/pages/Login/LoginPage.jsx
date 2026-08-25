@@ -16,8 +16,8 @@ function LoginPage() {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
-  const [email, setEmail] = useState("jigar.p@company.com");
-  const [password, setPassword] = useState("secret123");
+  const [email, setEmail] = useState("jigar.patel@yopmail.com");
+  const [password, setPassword] = useState("Jigar@123");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -38,7 +38,7 @@ function LoginPage() {
         loginSuccess({
           user: response.data.user,
           token: response.data.token,
-        })
+        }),
       );
 
       navigate(from, { replace: true });
@@ -47,7 +47,7 @@ function LoginPage() {
       setErrorMessage(
         err?.data?.message ||
           err?.error ||
-          "Invalid email or password. Please try again."
+          "Invalid email or password. Please try again.",
       );
     }
   };
@@ -59,9 +59,6 @@ function LoginPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             Productivity<span className="text-blue-600">Hub</span>
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Sign in to access your workspace
-          </p>
         </div>
 
         {errorMessage && (

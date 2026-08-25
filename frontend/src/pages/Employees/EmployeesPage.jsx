@@ -60,7 +60,7 @@ function EmployeesPage() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
-  const [deletingEmployee, setDeletingEmployee] = useState(null);
+  const [removingEmployee, setRemovingEmployee] = useState(null);
 
   const [formData, setFormData] = useState(BLANK_FORM);
   const [formErrors, setFormErrors] = useState({});
@@ -133,14 +133,14 @@ function EmployeesPage() {
     }
   };
 
-  const handleConfirmDelete = async () => {
-    if (deletingEmployee) {
+  const handleConfirmRemove = async () => {
+    if (removingEmployee) {
       try {
-        await deleteEmployee(deletingEmployee.id).unwrap();
-        setDeletingEmployee(null);
+        await deleteEmployee(removingEmployee.id).unwrap();
+        setRemovingEmployee(null);
         refetch();
       } catch (err) {
-        console.error("Failed to delete employee:", err);
+        console.error("Failed to remove employee:", err);
       }
     }
   };
@@ -170,9 +170,6 @@ function EmployeesPage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Manage company staff, roles, and departmental assignments
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -305,7 +302,7 @@ function EmployeesPage() {
                     className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <td className="px-4 py-3 font-mono text-xs text-gray-400">
-                      #{emp.id}
+                      {emp.id}
                     </td>
                     <td className="px-4 py-3">
                       <Link
@@ -345,10 +342,10 @@ function EmployeesPage() {
                         size="sm"
                         variant="ghost"
                         className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
-                        onClick={() => setDeletingEmployee(emp)}
+                        onClick={() => setRemovingEmployee(emp)}
                       >
                         <Trash2 className="w-3 h-3" />
-                        <span>Delete</span>
+                        <span>Remove</span>
                       </Button>
                     </td>
                   </tr>
@@ -522,7 +519,6 @@ function EmployeesPage() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="Active">Active</option>
-              <option value="On Leave">On Leave</option>
               <option value="Inactive">Inactive</option>
             </select>
           </div>
@@ -546,7 +542,7 @@ function EmployeesPage() {
       <Modal
         isOpen={editingEmployee !== null}
         onClose={() => setEditingEmployee(null)}
-        title={`Edit Employee #${editingEmployee?.id}`}
+        title={`Edit Employee ${editingEmployee?.id}`}
       >
         <form onSubmit={handleEditSubmit} className="space-y-4">
           <div>
@@ -618,7 +614,6 @@ function EmployeesPage() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="Active">Active</option>
-              <option value="On Leave">On Leave</option>
               <option value="Inactive">Inactive</option>
             </select>
           </div>
@@ -638,33 +633,33 @@ function EmployeesPage() {
         </form>
       </Modal>
 
-      {/* Delete Modal */}
+      {/* Remove Employee Modal */}
       <Modal
-        isOpen={deletingEmployee !== null}
-        onClose={() => setDeletingEmployee(null)}
-        title="Confirm Deletion"
+        isOpen={removingEmployee !== null}
+        onClose={() => setRemovingEmployee(null)}
+        title="Confirm Employee Removal"
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            Are you sure you want to permanently delete employee{" "}
+            Are you sure you want to remove employee{" "}
             <strong className="text-gray-900 dark:text-white">
-              {deletingEmployee?.name}
+              {removingEmployee?.name}
             </strong>
             ?
           </p>
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
             <Button
               variant="secondary"
-              onClick={() => setDeletingEmployee(null)}
+              onClick={() => setRemovingEmployee(null)}
             >
               Cancel
             </Button>
             <Button
               variant="danger"
-              onClick={handleConfirmDelete}
+              onClick={handleConfirmRemove}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete Employee"}
+              {isDeleting ? "Removing..." : "Remove Employee"}
             </Button>
           </div>
         </div>

@@ -1,25 +1,56 @@
 import { supabase } from "../config/supabase.js";
 
 const FIRST_NAMES = [
-  "Sarah", "James", "Elena", "Marcus", "Emily", "David", "Jessica", "Daniel",
-  "Sophia", "Michael", "Olivia", "Alexander", "Emma", "William", "Ava", "Ethan",
-  "Isabella", "Benjamin", "Mia", "Lucas", "Charlotte", "Henry", "Amelia", "Jack",
-  "Harper", "Oliver", "Evelyn", "Liam", "Abigail", "Noah", "Ella", "Mason"
+  "Aarav", "Priya", "Rahul", "Ananya", "Rohan", "Sneha", "Aditya", "Neha",
+  "Vikram", "Pooja", "Arjun", "Kavya", "Siddharth", "Riya", "Rajesh", "Deepika",
+  "Amit", "Shreya", "Karan", "Tanvi", "Nikhil", "Isha", "Manish", "Divya",
+  "Suresh", "Meera", "Varun", "Anushka", "Gaurav", "Swati", "Sanjay", "Preeti",
+  "Kunal", "Sakshi", "Harsh", "Shruti", "Akash", "Ritu", "Vivek", "Payal",
+  "Abhishek", "Sonam", "Prateek", "Simran", "Alok", "Nandini", "Tarun", "Bhavna"
 ];
 
 const LAST_NAMES = [
-  "Connor", "Miller", "Rostova", "Vance", "Chen", "Patel", "Taylor", "Anderson",
-  "Thomas", "Jackson", "White", "Harris", "Martin", "Clark", "Lewis", "Robinson",
-  "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen",
-  "Hill", "Flores", "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera"
+  "Sharma", "Patel", "Verma", "Gupta", "Singh", "Kumar", "Shah", "Mehta",
+  "Joshi", "Reddy", "Nair", "Iyer", "Chopra", "Malhotra", "Kapoor", "Bhatia",
+  "Saxena", "Deshmukh", "Kulkarni", "Agarwal", "Banerjee", "Chatterjee", "Mishra", "Pandey",
+  "Rao", "Shetty", "Ghosh", "Yadav", "Trivedi", "Choudhury", "Bose", "Dutta",
+  "Pillai", "Menon", "Mukherjee", "Das", "Desai", "Jain", "Thakur", "Soni"
 ];
 
 const DEPARTMENTS = ["Engineering", "Design", "Product", "Marketing"];
 const ROLES = {
-  Engineering: ["Frontend Developer", "Backend Engineer", "Full Stack Dev", "DevOps Engineer", "QA Engineer", "Lead Architect"],
-  Design: ["UI/UX Designer", "Product Designer", "Graphic Designer", "Design Lead", "Visual Designer"],
-  Product: ["Product Manager", "Scrum Master", "Business Analyst", "Product Owner", "Associate PM"],
-  Marketing: ["Marketing Lead", "Content Strategist", "SEO Specialist", "Growth Marketer", "Brand Manager"],
+  Engineering: [
+    "Frontend Developer",
+    "Backend Engineer",
+    "Full Stack Developer",
+    "Software Engineer Trainee",
+    "DevOps Engineer",
+    "Tech Lead"
+  ],
+  Design: [
+    "UI/UX Designer",
+    "Product Designer",
+    "Graphic Designer",
+    "UI/UX Design Trainee",
+    "Design Lead",
+    "Visual Designer"
+  ],
+  Product: [
+    "Product Manager",
+    "Associate PM Trainee",
+    "Scrum Master",
+    "Product Owner",
+    "Business Analyst",
+    "Technical Product Manager"
+  ],
+  Marketing: [
+    "Digital Marketing Specialist",
+    "Growth Marketer",
+    "SEO Specialist",
+    "Marketing Trainee",
+    "Content Strategist",
+    "Brand Manager"
+  ]
 };
 
 const STATUSES = ["Active", "Active", "Active", "On Leave", "Inactive"];
@@ -27,16 +58,36 @@ const TASK_PRIORITIES = ["High", "Medium", "Low"];
 const TASK_STATUSES = ["Pending", "In Progress", "Completed"];
 
 const TASK_VERBS = [
-  "Build", "Design", "Optimize", "Implement", "Refactor", "Test", "Deploy",
-  "Document", "Configure", "Review", "Audit", "Migrate", "Upgrade", "Monitor"
+  "Develop", "Configure", "Optimize", "Implement", "Refactor", "Test", "Deploy",
+  "Automate", "Debug", "Migrate", "Upgrade", "Monitor", "Audit", "Integrate",
+  "Troubleshoot", "Set up", "Resolve", "Benchmark"
 ];
 
 const TASK_SUBJECTS = [
-  "RTK Query Cache Invalidation", "Supabase Realtime Sync", "JWT Authentication Guard",
-  "Responsive Sidebar Navigation", "Light/Dark Theme Context", "Custom useDebounce Hook",
-  "Pagination & Chunk Loading", "Vite Production Bundle Splitting", "React.memo Optimization",
-  "Employee Directory Filters", "Task Productivity Analytics", "REST API Error Handling",
-  "Database Seeder Script", "Automated E2E Test Suite", "Docker Container Setup"
+  "RESTful API Endpoints with Node.js & Express",
+  "PostgreSQL Query Indexing & Performance Tuning",
+  "Docker Containerization for Microservices",
+  "CI/CD Build Pipeline in GitHub Actions",
+  "JWT Authentication & Role-Based Access Control (RBAC)",
+  "Redis Cache Invalidation & Session Store",
+  "React & Redux Toolkit State Synchronization",
+  "Kubernetes Cluster Deployment & Auto-scaling",
+  "AWS S3 Cloud Bucket Storage Integration",
+  "Automated E2E Test Suite with Cypress & Jest",
+  "Nginx Reverse Proxy & SSL Certificate Renewal",
+  "IT Network Firewall & VPN Access Protocols",
+  "Kafka Message Queue & Event Streaming",
+  "Employee Directory Search & Pagination Filters",
+  "System Health Check & Real-time Metrics Dashboard",
+  "Database Replication & Automated Backup Disaster Recovery",
+  "GraphQL Query Resolvers & Schema Stitching",
+  "Cybersecurity Vulnerability Scan & Patch Audit",
+  "Linux Server Hardening & SSH Key Management",
+  "Vite Frontend Production Bundle Splitting & Tree Shaking",
+  "WebSocket Real-time Notifications & Chat Gateway",
+  "OAuth 2.0 Single Sign-On (SSO) Protocol",
+  "TypeScript Type Definitions & Strict Mode Migration",
+  "IT Asset Management & Helpdesk Ticketing System"
 ];
 
 async function seedDatabase() {
@@ -102,7 +153,7 @@ async function seedDatabase() {
       const dueDate = `2026-${month}-${day}`;
 
       tasksData.push({
-        title: `${verb} ${subject} #${i}`,
+        title: `${verb} ${subject}`,
         assignee: assignedEmp ? assignedEmp.name : "Unassigned",
         priority,
         status,

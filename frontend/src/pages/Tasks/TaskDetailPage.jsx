@@ -26,7 +26,7 @@ function TaskDetailPage() {
           ← Back to Tasks
         </Button>
         <div className="p-6 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-xl text-red-700 dark:text-red-300">
-          <p className="font-semibold text-sm">Task #{id} not found</p>
+          <p className="font-semibold text-sm">Task {id} not found</p>
           <p className="text-xs text-red-500 dark:text-red-400 mt-1">{error?.data?.message || "Task record may have been deleted."}</p>
         </div>
       </div>
@@ -47,7 +47,7 @@ function TaskDetailPage() {
       <Card
         title={`Task: ${task.title}`}
         subtitle="Deliverable details and assignment status"
-        badge={`#${task.id}`}
+        badge={`${task.id}`}
       >
         <div className="space-y-6">
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-800">
@@ -73,7 +73,7 @@ function TaskDetailPage() {
 
             <div className="p-3.5 bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-800 rounded-lg">
               <p className="text-xs font-semibold text-gray-400 uppercase">Task Identifier</p>
-              <p className="font-mono font-medium text-gray-900 dark:text-white mt-0.5">#{task.id}</p>
+              <p className="font-mono font-medium text-gray-900 dark:text-white mt-0.5">{task.id}</p>
             </div>
           </div>
         </div>

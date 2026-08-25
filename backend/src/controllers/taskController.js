@@ -33,13 +33,13 @@ export const getTasks = async (req, res) => {
 
     query = query.order("id", { ascending: false });
 
-    // Normalize task record (pure VARCHAR string assignee)
+    // Normalize task record (pure VARCHAR string assignee, defaults to In Progress)
     const normalizeTask = (task) => ({
       id: task.id,
       title: task.title,
       assignee: task.assignee || "Unassigned",
       priority: task.priority || "Medium",
-      status: task.status || "Pending",
+      status: task.status || "In Progress",
       dueDate: task.due_date || task.dueDate || null,
       createdAt: task.created_at || task.createdAt,
       updatedAt: task.updated_at || task.updatedAt,
@@ -104,7 +104,7 @@ export const getTaskById = async (req, res) => {
       title: data.title,
       assignee: data.assignee || "Unassigned",
       priority: data.priority || "Medium",
-      status: data.status || "Pending",
+      status: data.status || "In Progress",
       dueDate: data.due_date || data.dueDate || null,
       createdAt: data.created_at || data.createdAt,
       updatedAt: data.updated_at || data.updatedAt,
@@ -117,7 +117,7 @@ export const getTaskById = async (req, res) => {
 };
 
 /**
- * @desc    Create a new task storing assignee directly as VARCHAR string
+ * @desc    Create a new task storing assignee directly as VARCHAR string (Defaults to In Progress)
  * @route   POST /api/tasks
  */
 export const createTask = async (req, res) => {
@@ -135,7 +135,7 @@ export const createTask = async (req, res) => {
           title,
           assignee: assignee || "Unassigned",
           priority: priority || "Medium",
-          status: status || "Pending",
+          status: status || "In Progress",
           due_date: dueDate || null,
         },
       ])
@@ -206,7 +206,7 @@ export const updateTask = async (req, res) => {
 };
 
 /**
- * @desc    Delete a task
+ * @desc    Delete / Remove a task
  * @route   DELETE /api/tasks/:id
  */
 export const deleteTask = async (req, res) => {
@@ -222,7 +222,7 @@ export const deleteTask = async (req, res) => {
     if (error || !data || data.length === 0) {
       return sendError(res, `Task with ID ${id} not found`, 404);
     }
-    return sendSuccess(res, { id: Number(id) }, `Task #${id} deleted successfully`, 200);
+    return sendSuccess(res, { id: Number(id) }, `Task #${id} removed successfully`, 200);
   } catch (error) {
     return sendError(res, "Failed to delete task", 500, error);
   }
