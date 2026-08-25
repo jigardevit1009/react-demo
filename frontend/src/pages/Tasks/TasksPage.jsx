@@ -35,6 +35,29 @@ const BLANK_TASK = {
 
 const ITEMS_PER_PAGE = 10;
 
+// Static badge variant mapper helpers
+const getPriorityVariant = (priority) => {
+  switch (priority) {
+    case "High":
+      return "danger";
+    case "Medium":
+      return "warning";
+    default:
+      return "info";
+  }
+};
+
+const getStatusVariant = (status) => {
+  switch (status) {
+    case "Completed":
+      return "success";
+    case "In Progress":
+      return "info";
+    default:
+      return "neutral";
+  }
+};
+
 function TasksPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -152,28 +175,6 @@ function TasksPage() {
       } catch (err) {
         console.error("Failed to delete task:", err);
       }
-    }
-  };
-
-  const getPriorityVariant = (priority) => {
-    switch (priority) {
-      case "High":
-        return "danger";
-      case "Medium":
-        return "warning";
-      default:
-        return "info";
-    }
-  };
-
-  const getStatusVariant = (status) => {
-    switch (status) {
-      case "Completed":
-        return "success";
-      case "In Progress":
-        return "info";
-      default:
-        return "neutral";
     }
   };
 
