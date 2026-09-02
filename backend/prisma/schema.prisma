@@ -1,0 +1,84 @@
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+//--------------------------Enums--------------------------
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum EmployeeStatus {
+  Active
+  Inactive
+}
+
+enum EmployeeRole {
+  Admin
+  Employee
+}
+
+enum EmployeeDepartment {
+  Engineering
+  Marketing
+  HR
+  Design
+  Sales
+}
+
+//--------------------------Models-------------------------
+
+// Unified Employee Model (Authentication + Profile + Roles)
+
+model Employee {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  password     String   // Hashed with bcryptjs
+  department   EmployeeDepartment @default(Engineering)  // Engineering, Marketing, HR, Design, Sales, etc.
+  role         EmployeeRole @default(Employee)  // e.g. "Senior Frontend Developer", "Product Lead"
+  status       EmployeeStatus @default(Active) // Active, Inactive
+  isSuperAdmin Boolean  @default(false) @map("is_superadmin") // true = Admin, false = Employee
+
+// 1-to-Many Relationship: 1 Employee has Many Tasks
+  tasks        Task[]   @relation("AssignedTasks")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  @@index([department, status])
+  @@map("employees")    
+}
+
+// Task Model (Deliverables assigned to an Employee)
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?   @db.Text
+  priority    Priority  @default(MEDIUM) // High, Medium, Low
+  status      TaskStatus  @default(PENDING) // Pending, In Progress, Completed
+  dueDate     DateTime? @map("due_date")
+
+  // Foreign Key to Employee
+  assignedTo  String?   @map("assigned_to")
+  employee    Employee? @relation("AssignedTasks", fields: [assignedTo], references: [id], onDelete: SetNull)
+
+  // Time Stamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  @@index([status, priority])
+  @@map("tasks")
+}

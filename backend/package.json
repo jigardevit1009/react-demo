@@ -3,19 +3,30 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "seed": "node src/utils/seeder.js"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "seed": "tsx src/utils/seeder.ts",
+    "studio": "prisma studio",
+    "db:push": "prisma db push"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.3",
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.4.1",
+    "nodemon": "^3.1.9",
+    "prisma": "^5.22.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
   }
 }
