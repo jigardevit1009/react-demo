@@ -50,7 +50,7 @@ model Employee {
   email        String   @unique
   password     String   // Hashed with bcryptjs
   department   EmployeeDepartment @default(Engineering)  // Engineering, Marketing, HR, Design, Sales, etc.
-  role         EmployeeRole @default(Employee)  // e.g. "Senior Frontend Developer", "Product Lead"
+  role         EmployeeRole @default(Employee)
   status       EmployeeStatus @default(Active) // Active, Inactive
   isSuperAdmin Boolean  @default(false) @map("is_superadmin") // true = Admin, false = Employee
 
