@@ -11,14 +11,17 @@ import {
   useDeleteTaskMutation,
 } from "../../store/api/taskApiSlice";
 import { useGetEmployeesQuery } from "../../store/api/employeeApiSlice";
-import { Trash2 } from "lucide-react";
+import { useExportReportMutation } from "../../store/api/reportApiSlice";
+import { useSocket } from "../../context/SocketContext";
+import { Trash2, Download, Radio, Sparkles } from "lucide-react";
 
-// Pure helper functions moved outside component to avoid re-creation on every render
+// Pure helper functions normalized for both uppercase database enums and title-case
 const getPriorityVariant = (priority) => {
-  switch (priority) {
-    case "High":
+  const p = priority?.toUpperCase();
+  switch (p) {
+    case "HIGH":
       return "danger";
-    case "Medium":
+    case "MEDIUM":
       return "warning";
     default:
       return "info";
@@ -26,10 +29,11 @@ const getPriorityVariant = (priority) => {
 };
 
 const getStatusVariant = (status) => {
-  switch (status) {
-    case "Completed":
+  const s = status?.toUpperCase()?.replace(" ", "_");
+  switch (s) {
+    case "COMPLETED":
       return "success";
-    case "In Progress":
+    case "IN_PROGRESS":
       return "info";
     default:
       return "neutral";
@@ -59,19 +63,25 @@ function DashboardPage() {
 
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask, { isLoading: isDeleting }] = useDeleteTaskMutation();
+  const [exportReport, { isLoading: isExporting }] = useExportReportMutation();
+  const { isConnected, showNotification } = useSocket();
 
   const [filter, setFilter] = useState("ALL");
   const [removingTask, setRemovingTask] = useState(null);
 
-  // Recalculate derived metrics
+  // Recalculate derived metrics (compatible with both uppercase ENUM and Title Case)
   const metrics = useMemo(() => {
     const totalEmployees = employees.length;
     const totalTasks = tasks.length;
-    const completedTasks = tasks.filter((t) => t.status === "Completed").length;
-    const inProgressTasks = tasks.filter(
-      (t) => t.status === "In Progress",
+    const completedTasks = tasks.filter(
+      (t) => t.status === "COMPLETED" || t.status === "Completed"
     ).length;
-    const pendingTasks = tasks.filter((t) => t.status === "Pending").length;
+    const inProgressTasks = tasks.filter(
+      (t) => t.status === "IN_PROGRESS" || t.status === "In Progress"
+    ).length;
+    const pendingTasks = tasks.filter(
+      (t) => t.status === "PENDING" || t.status === "Pending"
+    ).length;
     const productivityScore =
       totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
@@ -90,16 +100,37 @@ function DashboardPage() {
     let list = tasks;
     if (filter !== "ALL") {
       list = tasks.filter(
-        (task) => task.status?.toUpperCase() === filter.toUpperCase(),
+        (task) =>
+          task.status?.toUpperCase()?.replace(" ", "_") ===
+          filter.toUpperCase().replace(" ", "_")
       );
     }
     return list.slice(0, 10);
   }, [tasks, filter]);
 
+  const handleExportReport = async () => {
+    try {
+      showNotification({
+        title: "🐇 Job Queued in RabbitMQ!",
+        message: "Asynchronous worker is compiling 500+ records in the background...",
+        type: "info",
+      });
+      await exportReport().unwrap();
+    } catch (err) {
+      console.error("Failed to queue export job:", err);
+      showNotification({
+        title: "Export Failed",
+        message: err?.data?.message || "Failed to trigger report export.",
+        type: "warning",
+      });
+    }
+  };
+
   const handleToggleComplete = useCallback(
     async (task) => {
-      const newStatus =
-        task.status === "Completed" ? "In Progress" : "Completed";
+      const isCurrentlyCompleted =
+        task.status === "COMPLETED" || task.status === "Completed";
+      const newStatus = isCurrentlyCompleted ? "IN_PROGRESS" : "COMPLETED";
       try {
         await updateTask({ id: task.id, status: newStatus }).unwrap();
         refetch();
@@ -136,9 +167,35 @@ function DashboardPage() {
                 Syncing...
               </span>
             )}
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                isConnected
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                  : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isConnected ? "bg-emerald-500 animate-ping" : "bg-amber-500"
+                }`}
+              />
+              {isConnected ? "Socket.IO Live" : "Connecting..."}
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {/* RabbitMQ Asynchronous Export Button */}
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handleExportReport}
+            disabled={isExporting}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4 text-emerald-600" />
+            {isExporting ? "Queuing Job..." : "Export Report (RabbitMQ)"}
+          </Button>
+
           <Link to="/tasks">
             <Button variant="primary" size="md">
               + Manage Tasks

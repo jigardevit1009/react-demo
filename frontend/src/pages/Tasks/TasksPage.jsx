@@ -35,12 +35,12 @@ const BLANK_TASK = {
 
 const ITEMS_PER_PAGE = 10;
 
-// Static badge variant mapper helpers
 const getPriorityVariant = (priority) => {
-  switch (priority) {
-    case "High":
+  const p = priority?.toUpperCase();
+  switch (p) {
+    case "HIGH":
       return "danger";
-    case "Medium":
+    case "MEDIUM":
       return "warning";
     default:
       return "info";
@@ -48,10 +48,11 @@ const getPriorityVariant = (priority) => {
 };
 
 const getStatusVariant = (status) => {
-  switch (status) {
-    case "Completed":
+  const s = status?.toUpperCase()?.replace(" ", "_");
+  switch (s) {
+    case "COMPLETED":
       return "success";
-    case "In Progress":
+    case "IN_PROGRESS":
       return "info";
     default:
       return "neutral";
@@ -118,10 +119,10 @@ function TasksPage() {
     setEditingTask(task);
     setFormData({
       title: task.title,
-      assignee: task.assignee || "Unassigned",
+      assignee: task.assignedTo || task.employee?.id || "Unassigned",
       priority: task.priority || "Medium",
       status: task.status || "In Progress",
-      dueDate: task.dueDate || "2026-08-26",
+      dueDate: task.dueDate ? task.dueDate.split("T")[0] : "2026-08-26",
     });
     setFormErrors({});
   }, []);
@@ -130,7 +131,18 @@ function TasksPage() {
     e.preventDefault();
     if (!validateForm()) return;
     try {
-      await createTask(formData).unwrap();
+      const payload = {
+        title: formData.title,
+        description: formData.description || "",
+        priority: formData.priority?.toUpperCase(),
+        status: formData.status?.toUpperCase()?.replace(" ", "_"),
+        dueDate: formData.dueDate || null,
+        assignedTo:
+          formData.assignee && formData.assignee !== "Unassigned"
+            ? formData.assignee
+            : null,
+      };
+      await createTask(payload).unwrap();
       setIsAddModalOpen(false);
       refetch();
     } catch (err) {
@@ -143,7 +155,19 @@ function TasksPage() {
     e.preventDefault();
     if (!validateForm()) return;
     try {
-      await updateTask({ id: editingTask.id, ...formData }).unwrap();
+      const payload = {
+        id: editingTask.id,
+        title: formData.title,
+        description: formData.description || "",
+        priority: formData.priority?.toUpperCase(),
+        status: formData.status?.toUpperCase()?.replace(" ", "_"),
+        dueDate: formData.dueDate || null,
+        assignedTo:
+          formData.assignee && formData.assignee !== "Unassigned"
+            ? formData.assignee
+            : null,
+      };
+      await updateTask(payload).unwrap();
       setEditingTask(null);
       refetch();
     } catch (err) {
@@ -154,8 +178,9 @@ function TasksPage() {
 
   const handleToggleComplete = useCallback(
     async (task) => {
-      const newStatus =
-        task.status === "Completed" ? "In Progress" : "Completed";
+      const isCurrentlyCompleted =
+        task.status === "COMPLETED" || task.status === "Completed";
+      const newStatus = isCurrentlyCompleted ? "IN_PROGRESS" : "COMPLETED";
       try {
         await updateTask({ id: task.id, status: newStatus }).unwrap();
         refetch();
@@ -362,7 +387,7 @@ function TasksPage() {
                       <Link
                         to={`/tasks/${task.id}`}
                         className={`hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
-                          task.status === "Completed"
+                          task.status === "COMPLETED" || task.status === "Completed"
                             ? "line-through text-gray-400 dark:text-gray-500"
                             : ""
                         }`}
@@ -371,7 +396,7 @@ function TasksPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">
-                      {task.assignee || "Unassigned"}
+                      {task.employee?.name || task.assignee || "Unassigned"}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Badge variant={getPriorityVariant(task.priority)}>
@@ -384,19 +409,21 @@ function TasksPage() {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                      {task.dueDate || "No deadline"}
+                      {task.dueDate ? task.dueDate.split("T")[0] : "No deadline"}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
                         <Button
                           size="sm"
                           variant={
-                            task.status === "Completed" ? "secondary" : "outline"
+                            task.status === "COMPLETED" || task.status === "Completed"
+                              ? "secondary"
+                              : "outline"
                           }
                           onClick={() => handleToggleComplete(task)}
                           className="inline-flex items-center gap-1"
                         >
-                          {task.status === "Completed" ? (
+                          {task.status === "COMPLETED" || task.status === "Completed" ? (
                             <>
                               <Undo2 className="w-3 h-3" />
                               <span>Undo</span>
@@ -532,7 +559,7 @@ function TasksPage() {
               >
                 <option value="Unassigned">Unassigned</option>
                 {employeeList.map((emp) => (
-                  <option key={emp.id} value={emp.name}>
+                  <option key={emp.id} value={emp.id}>
                     {emp.name} ({emp.department})
                   </option>
                 ))}
@@ -635,7 +662,7 @@ function TasksPage() {
               >
                 <option value="Unassigned">Unassigned</option>
                 {employeeList.map((emp) => (
-                  <option key={emp.id} value={emp.name}>
+                  <option key={emp.id} value={emp.id}>
                     {emp.name} ({emp.department})
                   </option>
                 ))}
