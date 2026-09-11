@@ -17,7 +17,7 @@ declare global {
     }
 }
 
-// 1. Verify Bearer JWT
+// Verify Bearer JWT
 export const authenticateJWT = (
     req: Request,
     res: Response,
@@ -54,7 +54,7 @@ export const authenticateJWT = (
     }
 };
 
-// 2. Guard for SuperAdmin-Only routes
+// Guard for SuperAdmin-Only routes
 export const requireSuperAdmin = (
     req: Request,
     res: Response,
