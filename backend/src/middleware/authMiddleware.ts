@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import prisma from "../config/prisma";
 
 export interface AuthUserPayload {
     id: string;
     email: string;
     name?: string;
+    role?: string;
     isSuperAdmin: boolean;
 }
 
@@ -64,6 +66,34 @@ export const requireSuperAdmin = (
         return res.status(403).json({
             success: false,
             message: "Access Denied: SuperAdmin permission required",
+            data: null,
+            error: "Forbidden",
+        });
+    }
+    next();
+};
+
+// Guard for Admin-Only routes (Employees module, management operations)
+export const requireAdmin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    let isAdmin = Boolean(req.user?.isSuperAdmin);
+    if (!isAdmin && req.user?.id) {
+        const emp = await prisma.employee.findUnique({
+            where: { id: req.user.id },
+            select: { isSuperAdmin: true },
+        });
+        if (emp?.isSuperAdmin) {
+            isAdmin = true;
+        }
+    }
+
+    if (!isAdmin) {
+        return res.status(403).json({
+            success: false,
+            message: "Access Denied: Administrator permission required to access Employee module",
             data: null,
             error: "Forbidden",
         });

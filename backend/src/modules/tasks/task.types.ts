@@ -23,8 +23,7 @@ export interface GetTasksQueryDTO {
     limit?: string;
     search?: string;
     status?: string;
-    priority?: string;
-}
+    priority?: string;    assignee?: string;    assignedTo?: string;    all?: string | boolean;}
 
 export interface PaginatedTasksResult {
     tasks: any[];

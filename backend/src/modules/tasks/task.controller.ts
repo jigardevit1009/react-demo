@@ -12,7 +12,7 @@ export class TaskController extends BaseController {
 
     getTasks = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = await this.service.getTasks(req.query);
+            const result = await this.service.getTasks(req.query, req.user);
             return this.sendSuccess(res, "Tasks fetched successfully", result);
         } catch (error) {
             next(error);
@@ -21,7 +21,7 @@ export class TaskController extends BaseController {
 
     getTaskById = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const task = await this.service.getTaskById(req.params.id as string);
+            const task = await this.service.getTaskById(req.params.id as string, req.user);
             return this.sendSuccess(res, "Task details fetched", task);
         } catch (error) {
             next(error);
@@ -30,7 +30,7 @@ export class TaskController extends BaseController {
 
     createTask = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const task = await this.service.createTask(req.body);
+            const task = await this.service.createTask(req.body, req.user);
             return this.sendSuccess(res, "Task created successfully", task, 201);
         } catch (error) {
             next(error);
@@ -39,7 +39,7 @@ export class TaskController extends BaseController {
 
     updateTask = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const updated = await this.service.updateTask(req.params.id as string, req.body);
+            const updated = await this.service.updateTask(req.params.id as string, req.body, req.user);
             return this.sendSuccess(res, "Task updated successfully", updated);
         } catch (error) {
             next(error);
@@ -48,7 +48,7 @@ export class TaskController extends BaseController {
 
     deleteTask = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            await this.service.deleteTask(req.params.id as string);
+            await this.service.deleteTask(req.params.id as string, req.user);
             return this.sendSuccess(res, "Task deleted successfully");
         } catch (error) {
             next(error);

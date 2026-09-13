@@ -17,7 +17,7 @@ model Employee {
   createdAt    DateTime           @default(now()) @map("created_at")
   updatedAt    DateTime           @updatedAt @map("updated_at")
   department   EmployeeDepartment @default(Engineering)
-  role         EmployeeRole       @default(Employee)
+  role         String             @default("Software Developer")
   status       EmployeeStatus     @default(Active)
   tasks        Task[]             @relation("AssignedTasks")
 
@@ -34,7 +34,7 @@ model Task {
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
   priority    Priority   @default(MEDIUM)
-  status      TaskStatus @default(PENDING)
+  status      TaskStatus @default(TODO)
   employee    Employee?  @relation("AssignedTasks", fields: [assignedTo], references: [id])
 
   @@index([status, priority])
@@ -48,6 +48,7 @@ enum Priority {
 }
 
 enum TaskStatus {
+  TODO
   PENDING
   IN_PROGRESS
   COMPLETED
@@ -58,10 +59,6 @@ enum EmployeeStatus {
   Inactive
 }
 
-enum EmployeeRole {
-  Admin
-  Employee
-}
 
 enum EmployeeDepartment {
   Engineering

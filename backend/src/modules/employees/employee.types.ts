@@ -1,10 +1,10 @@
-import { EmployeeDepartment, EmployeeRole, EmployeeStatus } from "@prisma/client";
+import { EmployeeDepartment, EmployeeStatus } from "@prisma/client";
 
 export interface CreateEmployeeDTO {
     name: string;
     email: string;
     department: EmployeeDepartment;
-    role: EmployeeRole;
+    role: string;
     status?: EmployeeStatus;
     password?: string;
 }
@@ -13,7 +13,7 @@ export interface UpdateEmployeeDTO {
     name?: string;
     email?: string;
     department?: EmployeeDepartment;
-    role?: EmployeeRole;
+    role?: string;
     status?: EmployeeStatus;
     isSuperAdmin?: boolean;
 }

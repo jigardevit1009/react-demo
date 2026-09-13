@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../../common/AppError";
 import prisma from "../../config/prisma";
 import { AuthResponseData, ForgotPasswordDTO, LoginDTO, RegisterDTO } from "./auth.types";
-import { EmployeeDepartment, EmployeeRole, EmployeeStatus } from "@prisma/client";
+import { EmployeeDepartment, EmployeeStatus } from "@prisma/client";
 
 export class AuthService {
 
@@ -32,14 +32,14 @@ export class AuthService {
                 email,
                 password: hashedPassword,
                 department: department || EmployeeDepartment.Engineering,
-                role: role || EmployeeRole.Employee,
+                role: role || "Software Developer",
                 status: EmployeeStatus.Active || "Active",
                 isSuperAdmin: false,
             },
         });
 
         // Generate JWT
-        const token = this.generateToken(employee.id, employee.email, employee.isSuperAdmin);
+        const token = this.generateToken(employee.id, employee.email, employee.isSuperAdmin, employee.role);
 
         return {
             token,
@@ -74,7 +74,7 @@ export class AuthService {
             throw new AppError("Invalid email or password", 401);
         }
 
-        const token = this.generateToken(employee.id, employee.email, employee.isSuperAdmin);
+        const token = this.generateToken(employee.id, employee.email, employee.isSuperAdmin, employee.role);
 
         return {
             token,
@@ -135,9 +135,7 @@ export class AuthService {
 
 
     // Helper method: JWT Signer
-    private generateToken(id: string, email: string, isSuperAdmin: boolean): string {
-        return jwt.sign(
-            { id, email, isSuperAdmin },
+    private generateToken(id: string, email: string, isSuperAdmin: boolean, role?: string): string {        return jwt.sign(            { id, email, isSuperAdmin, role },
             process.env.JWT_SECRET || "react_demo_2026",
             { expiresIn: "7d" }
         );

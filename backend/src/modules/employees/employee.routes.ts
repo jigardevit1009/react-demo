@@ -1,11 +1,12 @@
 import { Router } from "express";
 import employeeController from "./employee.controller";
-import { authenticateJWT, requireSuperAdmin } from "../../middleware/authMiddleware";
+import { authenticateJWT, requireAdmin, requireSuperAdmin } from "../../middleware/authMiddleware";
 
 const router = Router();
 
-// All employee routes require being logged in
+// All employee routes require authentication and Administrator permissions
 router.use(authenticateJWT);
+router.use(requireAdmin);
 
 router.get("/", employeeController.getEmployees);
 router.get("/:id", employeeController.getEmployeeById);

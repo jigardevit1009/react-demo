@@ -1,12 +1,12 @@
 // backend/src/modules/auth/auth.types.ts
-import { EmployeeDepartment, EmployeeRole, EmployeeStatus } from "@prisma/client";
+import { EmployeeDepartment, EmployeeStatus } from "@prisma/client";
 
 export interface RegisterDTO {
     name: string;
     email: string;
     password: string;
     department?: EmployeeDepartment;
-    role?: EmployeeRole;
+    role?: string;
 }
 
 export interface LoginDTO {
@@ -26,7 +26,7 @@ export interface AuthResponseData {
         name: string;
         email: string;
         department: EmployeeDepartment;
-        role: EmployeeRole;
+        role: string;
         status: EmployeeStatus;
         isSuperAdmin: boolean;
     };

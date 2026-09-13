@@ -7,7 +7,7 @@ import {
     GetEmployeesQueryDTO,
     PaginatedEmployeesResult,
 } from "./employee.types";
-import { EmployeeDepartment, EmployeeRole, EmployeeStatus, Prisma } from "@prisma/client";
+import { EmployeeDepartment, EmployeeStatus, Prisma } from "@prisma/client";
 
 export class EmployeeService {
     //Get Paginated & Filtered Employees (or All for dropdowns)
@@ -112,7 +112,7 @@ export class EmployeeService {
                 email,
                 password: hashedPassword,
                 department: department || EmployeeDepartment.Engineering,
-                role: role || EmployeeRole.Employee,
+                role: role || "Software Developer",
                 status: status || EmployeeStatus.Active,
                 isSuperAdmin: false,
             },

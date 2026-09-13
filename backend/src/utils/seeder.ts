@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import prisma from "../config/prisma";
 import {
     EmployeeDepartment,
-    EmployeeRole,
     EmployeeStatus,
     Priority,
     TaskStatus,
@@ -26,7 +25,7 @@ async function seed() {
             email: "admin@productivityhub.com",
             password: adminPassword,
             department: EmployeeDepartment.Engineering,
-            role: EmployeeRole.Admin,
+            role: "System Administrator",
             status: EmployeeStatus.Active,
             isSuperAdmin: true, // SuperAdmin Privileges
         },
@@ -40,7 +39,7 @@ async function seed() {
             email: "sarah@company.com",
             password: userPassword,
             department: EmployeeDepartment.Engineering,
-            role: EmployeeRole.Employee,
+            role: "Software Developer",
             status: EmployeeStatus.Active,
             isSuperAdmin: false,
         },
@@ -52,7 +51,7 @@ async function seed() {
             email: "michael@company.com",
             password: userPassword,
             department: EmployeeDepartment.Sales,
-            role: EmployeeRole.Employee,
+            role: "Software Developer",
             status: EmployeeStatus.Active,
             isSuperAdmin: false,
         },
@@ -64,7 +63,7 @@ async function seed() {
             email: "pam@company.com",
             password: userPassword,
             department: EmployeeDepartment.Design,
-            role: EmployeeRole.Employee,
+            role: "Software Developer",
             status: EmployeeStatus.Active,
             isSuperAdmin: false,
         },
