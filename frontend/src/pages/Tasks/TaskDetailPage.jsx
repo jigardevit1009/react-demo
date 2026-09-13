@@ -53,13 +53,23 @@ function TaskDetailPage() {
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-800">
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase">Assigned To</p>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mt-0.5">{task.assignee}</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mt-0.5">{task.employee?.name || task.assignee || "Unassigned"}</h3>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant={task.priority === "High" ? "danger" : task.priority === "Medium" ? "warning" : "info"}>
                 {task.priority} Priority
               </Badge>
-              <Badge variant={task.status === "Completed" ? "success" : "info"}>
+              <Badge
+                variant={
+                  task.status === "COMPLETED" || task.status === "Completed"
+                    ? "success"
+                    : task.status === "TODO" || task.status === "Todo"
+                    ? "purple"
+                    : task.status === "PENDING" || task.status === "Pending"
+                    ? "warning"
+                    : "info"
+                }
+              >
                 {task.status}
               </Badge>
             </div>

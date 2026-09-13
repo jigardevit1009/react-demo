@@ -15,6 +15,12 @@ export const taskApiSlice = apiSlice.injectEndpoints({
         if (params.priority && params.priority !== "ALL") {
           queryParams.append("priority", params.priority);
         }
+        if (params.assignee && params.assignee !== "ALL") {
+          queryParams.append("assignee", params.assignee);
+        }
+        if (params.assignedTo && params.assignedTo !== "ALL") {
+          queryParams.append("assignedTo", params.assignedTo);
+        }
         if (params.all) queryParams.append("all", "true");
 
         const queryString = queryParams.toString();

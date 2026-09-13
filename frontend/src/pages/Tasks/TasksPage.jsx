@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
   RotateCw,
@@ -29,7 +30,7 @@ const BLANK_TASK = {
   title: "",
   assignee: "Unassigned",
   priority: "Medium",
-  status: "In Progress",
+  status: "TODO",
   dueDate: "2026-08-26",
 };
 
@@ -54,17 +55,25 @@ const getStatusVariant = (status) => {
       return "success";
     case "IN_PROGRESS":
       return "info";
+    case "PENDING":
+      return "warning";
+    case "TODO":
+      return "purple";
     default:
       return "neutral";
   }
 };
 
 function TasksPage() {
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = Boolean(user?.isSuperAdmin);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
+  const [assigneeFilter, setAssigneeFilter] = useState("ALL");
 
   const { data, isLoading, isFetching, isError, error, refetch } =
     useGetTasksQuery({
@@ -73,9 +82,14 @@ function TasksPage() {
       search: debouncedSearchTerm,
       status: statusFilter,
       priority: priorityFilter,
+      ...(!isAdmin && user?.id ? { assignee: user.id } : {}),
+      ...(isAdmin && assigneeFilter !== "ALL" ? { assignee: assigneeFilter } : {}),
     });
 
-  const { data: allEmployeesData } = useGetEmployeesQuery({ all: true });
+  const { data: allEmployeesData } = useGetEmployeesQuery(
+    { all: true },
+    { skip: !isAdmin }
+  );
   const employeeList = Array.isArray(allEmployeesData)
     ? allEmployeesData
     : allEmployeesData?.employees || [];
@@ -110,10 +124,13 @@ function TasksPage() {
   };
 
   const handleOpenAddModal = useCallback(() => {
-    setFormData(BLANK_TASK);
+    setFormData({
+      ...BLANK_TASK,
+      assignee: !isAdmin && user?.id ? user.id : "Unassigned",
+    });
     setFormErrors({});
     setIsAddModalOpen(true);
-  }, []);
+  }, [isAdmin, user]);
 
   const handleOpenEditModal = useCallback((task) => {
     setEditingTask(task);
@@ -121,7 +138,7 @@ function TasksPage() {
       title: task.title,
       assignee: task.assignedTo || task.employee?.id || "Unassigned",
       priority: task.priority || "Medium",
-      status: task.status || "In Progress",
+      status: task.status || "TODO",
       dueDate: task.dueDate ? task.dueDate.split("T")[0] : "2026-08-26",
     });
     setFormErrors({});
@@ -138,7 +155,9 @@ function TasksPage() {
         status: formData.status?.toUpperCase()?.replace(" ", "_"),
         dueDate: formData.dueDate || null,
         assignedTo:
-          formData.assignee && formData.assignee !== "Unassigned"
+          !isAdmin && user?.id
+            ? user.id
+            : formData.assignee && formData.assignee !== "Unassigned"
             ? formData.assignee
             : null,
       };
@@ -180,7 +199,7 @@ function TasksPage() {
     async (task) => {
       const isCurrentlyCompleted =
         task.status === "COMPLETED" || task.status === "Completed";
-      const newStatus = isCurrentlyCompleted ? "IN_PROGRESS" : "COMPLETED";
+      const newStatus = isCurrentlyCompleted ? "TODO" : "COMPLETED";
       try {
         await updateTask({ id: task.id, status: newStatus }).unwrap();
         refetch();
@@ -225,8 +244,13 @@ function TasksPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Task Management Board
+              {isAdmin ? "Task Management Board" : "My Assigned Tasks"}
             </h1>
+            {!isAdmin && (
+              <span className="text-xs bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2.5 py-0.5 rounded-full font-medium">
+                Personal View
+              </span>
+            )}
             {isFetching && (
               <span className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-300 px-2.5 py-0.5 rounded-full font-medium animate-pulse">
                 Syncing...
@@ -285,12 +309,36 @@ function TasksPage() {
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+            {isAdmin ? (
+              <select
+                value={assigneeFilter}
+                onChange={(e) => {
+                  setAssigneeFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                <option value="ALL">All Assignees</option>
+                <option value="UNASSIGNED">Unassigned</option>
+                {employeeList.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.department})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 rounded-lg text-xs font-medium">
+                <span>Assignee: <strong>{user?.name || "You"}</strong></span>
+              </div>
+            )}
+
             <select
               value={statusFilter}
               onChange={handleStatusFilterChange}
               className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="ALL">All Statuses</option>
+              <option value="TODO">To Do</option>
               <option value="IN PROGRESS">In Progress</option>
               <option value="PENDING">Pending</option>
               <option value="COMPLETED">Completed</option>
@@ -349,6 +397,7 @@ function TasksPage() {
                 setSearchTerm("");
                 setStatusFilter("ALL");
                 setPriorityFilter("ALL");
+                setAssigneeFilter("ALL");
                 setCurrentPage(1);
               }}
             >
@@ -360,7 +409,7 @@ function TasksPage() {
             <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
               <thead className="bg-gray-50 dark:bg-gray-800/60 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200 dark:border-gray-800">
                 <tr>
-                  <th className="px-4 py-3 whitespace-nowrap">Task ID</th>
+                  {/* <th className="px-4 py-3 whitespace-nowrap">Task ID</th> */}
                   <th className="px-4 py-3 min-w-[260px]">Title</th>
                   <th className="px-4 py-3 whitespace-nowrap">Assigned To</th>
                   <th className="px-4 py-3 whitespace-nowrap">Priority</th>
@@ -375,14 +424,14 @@ function TasksPage() {
                     key={task.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-gray-400 whitespace-nowrap">
+                    {/* <td className="px-4 py-3 font-mono text-xs text-gray-400 whitespace-nowrap">
                       <Link
                         to={`/tasks/${task.id}`}
                         className="font-bold text-blue-600 dark:text-blue-400 hover:underline"
                       >
                         {task.id}
                       </Link>
-                    </td>
+                    </td> */}
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
                       <Link
                         to={`/tasks/${task.id}`}
@@ -444,15 +493,17 @@ function TasksPage() {
                           <Edit2 className="w-3 h-3" />
                           <span>Edit</span>
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
-                          onClick={() => setRemovingTask(task)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          <span>Remove</span>
-                        </Button>
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
+                            onClick={() => setRemovingTask(task)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Remove</span>
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -551,19 +602,28 @@ function TasksPage() {
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Assign To Employee
               </label>
-              <select
-                name="assignee"
-                value={formData.assignee}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-              >
-                <option value="Unassigned">Unassigned</option>
-                {employeeList.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.department})
-                  </option>
-                ))}
-              </select>
+              {isAdmin ? (
+                <select
+                  name="assignee"
+                  value={formData.assignee}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                >
+                  <option value="Unassigned">Unassigned</option>
+                  {employeeList.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name} ({emp.department})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  disabled
+                  value={`${user?.name || "You"} (Assigned to You)`}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-gray-100 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                />
+              )}
             </div>
 
             <div>
@@ -607,7 +667,8 @@ function TasksPage() {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
-                <option value="In Progress">In Progress (Default)</option>
+                <option value="TODO">To Do (Default)</option>
+                <option value="In Progress">In Progress</option>
                 <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>
               </select>
@@ -654,19 +715,28 @@ function TasksPage() {
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Assign To Employee
               </label>
-              <select
-                name="assignee"
-                value={formData.assignee}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-              >
-                <option value="Unassigned">Unassigned</option>
-                {employeeList.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.department})
-                  </option>
-                ))}
-              </select>
+              {isAdmin ? (
+                <select
+                  name="assignee"
+                  value={formData.assignee}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                >
+                  <option value="Unassigned">Unassigned</option>
+                  {employeeList.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name} ({emp.department})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  disabled
+                  value={`${user?.name || "You"} (Assigned to You)`}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-gray-100 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                />
+              )}
             </div>
 
             <div>
@@ -710,6 +780,7 @@ function TasksPage() {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
+                <option value="TODO">To Do</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>

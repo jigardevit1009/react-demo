@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { LayoutDashboard, Users, CheckSquare, LogOut } from "lucide-react";
 import { logout } from "../../store/authSlice";
 import { useTheme } from "../../context/ThemeContext";
@@ -8,6 +8,8 @@ function Sidebar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isDark } = useTheme();
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = Boolean(user?.isSuperAdmin);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -16,7 +18,7 @@ function Sidebar() {
 
   const menuItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-    { label: "Employees", icon: Users, path: "/employees" },
+    ...(isAdmin ? [{ label: "Employees", icon: Users, path: "/employees" }] : []),
     { label: "Tasks", icon: CheckSquare, path: "/tasks" },
   ];
 

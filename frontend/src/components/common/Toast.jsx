@@ -38,7 +38,7 @@ function Toast({ notification, onDismiss }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 max-w-md w-full animate-in fade-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed top-5 right-5 sm:top-6 sm:right-6 z-50 max-w-sm sm:max-w-md w-[calc(100%-2.5rem)] sm:w-full animate-in fade-in slide-in-from-top-5 duration-300 pointer-events-auto">
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 p-4 flex items-start gap-3 backdrop-blur-lg">
         <div className="p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80">
           {getIcon()}

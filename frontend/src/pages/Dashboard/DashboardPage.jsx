@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import Card from "../../components/common/Card";
 import Badge from "../../components/common/Badge";
@@ -35,30 +36,43 @@ const getStatusVariant = (status) => {
       return "success";
     case "IN_PROGRESS":
       return "info";
+    case "PENDING":
+      return "warning";
+    case "TODO":
+      return "purple";
     default:
       return "neutral";
   }
 };
 
 function DashboardPage() {
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = Boolean(user?.isSuperAdmin);
+
   const {
     data: tasksData,
     isLoading: isTasksLoading,
     isFetching,
     refetch,
-  } = useGetTasksQuery({ all: true });
-  const { data: employeesData } = useGetEmployeesQuery({ all: true });
+  } = useGetTasksQuery({
+    all: true,
+    ...(!isAdmin && user?.id ? { assignee: user.id } : {}),
+  });
+  const { data: employeesData } = useGetEmployeesQuery(
+    { all: true },
+    { skip: !isAdmin },
+  );
 
   const tasks = useMemo(
     () => (Array.isArray(tasksData) ? tasksData : tasksData?.tasks || []),
-    [tasksData]
+    [tasksData],
   );
   const employees = useMemo(
     () =>
       Array.isArray(employeesData)
         ? employeesData
         : employeesData?.employees || [],
-    [employeesData]
+    [employeesData],
   );
 
   const [updateTask] = useUpdateTaskMutation();
@@ -74,13 +88,11 @@ function DashboardPage() {
     const totalEmployees = employees.length;
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(
-      (t) => t.status === "COMPLETED" || t.status === "Completed"
+      (t) => t.status === "COMPLETED" || t.status === "Completed",
     ).length;
-    const inProgressTasks = tasks.filter(
-      (t) => t.status === "IN_PROGRESS" || t.status === "In Progress"
-    ).length;
-    const pendingTasks = tasks.filter(
-      (t) => t.status === "PENDING" || t.status === "Pending"
+    // Active tasks contain all tasks without Completed
+    const activeTasks = tasks.filter(
+      (t) => t.status !== "COMPLETED" && t.status !== "Completed",
     ).length;
     const productivityScore =
       totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -89,8 +101,7 @@ function DashboardPage() {
       totalEmployees,
       totalTasks,
       completedTasks,
-      inProgressTasks,
-      pendingTasks,
+      activeTasks,
       productivityScore,
     };
   }, [tasks, employees]);
@@ -102,7 +113,7 @@ function DashboardPage() {
       list = tasks.filter(
         (task) =>
           task.status?.toUpperCase()?.replace(" ", "_") ===
-          filter.toUpperCase().replace(" ", "_")
+          filter.toUpperCase().replace(" ", "_"),
       );
     }
     return list.slice(0, 10);
@@ -112,7 +123,8 @@ function DashboardPage() {
     try {
       showNotification({
         title: "🐇 Job Queued in RabbitMQ!",
-        message: "Asynchronous worker is compiling 500+ records in the background...",
+        message:
+          "Asynchronous worker is compiling 500+ records in the background...",
         type: "info",
       });
       await exportReport().unwrap();
@@ -130,7 +142,7 @@ function DashboardPage() {
     async (task) => {
       const isCurrentlyCompleted =
         task.status === "COMPLETED" || task.status === "Completed";
-      const newStatus = isCurrentlyCompleted ? "IN_PROGRESS" : "COMPLETED";
+      const newStatus = isCurrentlyCompleted ? "TODO" : "COMPLETED";
       try {
         await updateTask({ id: task.id, status: newStatus }).unwrap();
         refetch();
@@ -160,7 +172,7 @@ function DashboardPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Dashboard Overview
+              {isAdmin ? "Dashboard Overview" : "My Workspace Dashboard"}
             </h1>
             {isFetching && (
               <span className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full font-medium animate-pulse">
@@ -184,17 +196,19 @@ function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {/* RabbitMQ Asynchronous Export Button */}
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={handleExportReport}
-            disabled={isExporting}
-            className="flex items-center gap-2"
-          >
-            <Download className="w-4 h-4 text-emerald-600" />
-            {isExporting ? "Queuing Job..." : "Export Report (RabbitMQ)"}
-          </Button>
+          {/* RabbitMQ Asynchronous Export Button (Admin Only) */}
+          {isAdmin && (
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={handleExportReport}
+              disabled={isExporting}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4 text-emerald-600" />
+              {isExporting ? "Queuing Job..." : "Export Report (RabbitMQ)"}
+            </Button>
+          )}
 
           <Link to="/tasks">
             <Button variant="primary" size="md">
@@ -206,20 +220,32 @@ function DashboardPage() {
 
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <MetricCard
-          title="Total Employees"
-          value={metrics.totalEmployees}
-          badge="Directory"
-          badgeColor="text-emerald-600"
-          subtitle="Active team members"
-        />
+        {isAdmin ? (
+          <MetricCard
+            title="Total Employees"
+            value={metrics.totalEmployees}
+            badge="Directory"
+            badgeColor="text-emerald-600"
+            subtitle="Active team members"
+          />
+        ) : (
+          <MetricCard
+            title="Assigned Tasks"
+            value={metrics.totalTasks}
+            badge="My Deliverables"
+            badgeColor="text-indigo-600"
+            subtitle="Total tasks assigned to you"
+          />
+        )}
 
         <MetricCard
           title="Active Tasks"
-          value={metrics.inProgressTasks}
-          badge="In Progress"
+          value={metrics.activeTasks}
+          badge="Active"
           badgeColor="text-blue-600"
-          subtitle={`${metrics.pendingTasks} awaiting start`}
+          subtitle={
+            isAdmin ? "Tasks awaiting completion" : "Your open deliverables"
+          }
         />
 
         <MetricCard
@@ -227,15 +253,17 @@ function DashboardPage() {
           value={metrics.completedTasks}
           badge="Delivered"
           badgeColor="text-emerald-600"
-          subtitle="Total completed"
+          subtitle={isAdmin ? "Total completed" : "Completed by you"}
         />
 
         <MetricCard
           title="Productivity Rate"
           value={`${metrics.productivityScore}%`}
-          badge="Target: 80%"
+          badge={isAdmin ? "Target: 80%" : "My Rate"}
           badgeColor="text-purple-600"
-          subtitle="Overall completion rate"
+          subtitle={
+            isAdmin ? "Overall completion rate" : "Your completion rate"
+          }
           progress={metrics.productivityScore}
           progressColor="bg-purple-600"
         />
@@ -243,11 +271,13 @@ function DashboardPage() {
 
       {/* Tasks Table */}
       <Card
-        title="Recent Team Deliverables"
+        title={
+          isAdmin ? "Recent Team Deliverables" : "Your Recent Deliverables"
+        }
         subtitle={
           isTasksLoading
             ? "Loading..."
-            : `Showing top ${filteredTasks.length} recent tasks`
+            : `Showing top ${filteredTasks.length} ${isAdmin ? "recent tasks" : "tasks assigned to you"}`
         }
         badge={`${filteredTasks.length} shown`}
       >
@@ -255,7 +285,7 @@ function DashboardPage() {
           <span className="text-xs font-semibold text-gray-400 mr-2 uppercase">
             Filter:
           </span>
-          {["ALL", "IN PROGRESS", "PENDING", "COMPLETED"].map((tab) => (
+          {["ALL", "TODO", "IN PROGRESS", "PENDING", "COMPLETED"].map((tab) => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
@@ -297,12 +327,14 @@ function DashboardPage() {
             <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
               <thead className="bg-gray-50 dark:bg-gray-800/60 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200 dark:border-gray-800">
                 <tr>
-                  <th className="px-4 py-3 whitespace-nowrap">Task ID</th>
+                  {/* <th className="px-4 py-3 whitespace-nowrap">Task ID</th> */}
                   <th className="px-4 py-3 min-w-[240px]">Title</th>
                   <th className="px-4 py-3 whitespace-nowrap">Assignee</th>
                   <th className="px-4 py-3 whitespace-nowrap">Priority</th>
                   <th className="px-4 py-3 whitespace-nowrap">Status</th>
-                  <th className="px-4 py-3 text-right whitespace-nowrap">Actions</th>
+                  <th className="px-4 py-3 text-right whitespace-nowrap">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -311,27 +343,33 @@ function DashboardPage() {
                     key={task.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-gray-400 whitespace-nowrap">
+                    {/* <td className="px-4 py-3 font-mono text-xs text-gray-400 whitespace-nowrap">
                       <Link
                         to={`/tasks/${task.id}`}
                         className="text-blue-600 hover:underline font-bold"
                       >
                         {task.id}
                       </Link>
-                    </td>
+                    </td> */}
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                      <span
-                        className={
+                      <Link
+                        to={`/tasks/${task.id}`}
+                        className={`hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                          task.status === "COMPLETED" ||
                           task.status === "Completed"
-                            ? "line-through text-gray-400"
+                            ? "line-through text-gray-400 dark:text-gray-500"
                             : ""
-                        }
+                        }`}
                       >
                         {task.title}
-                      </span>
+                      </Link>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                      {task.assignee}
+                    <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span>
+                          {task.employee?.name || task.assignee || "Unassigned"}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Badge variant={getPriorityVariant(task.priority)}>
@@ -348,21 +386,29 @@ function DashboardPage() {
                         <Button
                           size="sm"
                           variant={
-                            task.status === "Completed" ? "secondary" : "outline"
+                            task.status === "COMPLETED" ||
+                            task.status === "Completed"
+                              ? "secondary"
+                              : "outline"
                           }
                           onClick={() => handleToggleComplete(task)}
                         >
-                          {task.status === "Completed" ? "Undo" : "✓ Done"}
+                          {task.status === "COMPLETED" ||
+                          task.status === "Completed"
+                            ? "Undo"
+                            : "✓ Done"}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
-                          onClick={() => setRemovingTask(task)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          <span>Remove</span>
-                        </Button>
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 inline-flex items-center gap-1"
+                            onClick={() => setRemovingTask(task)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Remove</span>
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -388,10 +434,7 @@ function DashboardPage() {
             ?
           </p>
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <Button
-              variant="secondary"
-              onClick={() => setRemovingTask(null)}
-            >
+            <Button variant="secondary" onClick={() => setRemovingTask(null)}>
               Cancel
             </Button>
             <Button

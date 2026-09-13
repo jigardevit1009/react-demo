@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import AdminRoute from "./components/common/AdminRoute";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 
 // Route-Based Code Splitting: Lazy load each page on demand
@@ -34,9 +35,11 @@ function App() {
           {/* Lazy-Loaded Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
 
-          {/* Lazy-Loaded Employees */}
-          <Route path="/employees" element={<EmployeesPage />} />
-          <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+          {/* Admin-Only Employees Module */}
+          <Route element={<AdminRoute />}>
+            <Route path="/employees" element={<EmployeesPage />} />
+            <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+          </Route>
 
           {/* Lazy-Loaded Tasks */}
           <Route path="/tasks" element={<TasksPage />} />

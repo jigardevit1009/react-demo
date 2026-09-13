@@ -287,7 +287,7 @@ function EmployeesPage() {
             <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
               <thead className="bg-gray-50 dark:bg-gray-800/60 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200 dark:border-gray-800">
                 <tr>
-                  <th className="px-4 py-3">ID</th>
+                  {/* <th className="px-4 py-3">ID</th> */}
                   <th className="px-4 py-3">Employee</th>
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Department</th>
@@ -301,9 +301,9 @@ function EmployeesPage() {
                     key={emp.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-gray-400">
+                    {/* <td className="px-4 py-3 font-mono text-xs text-gray-400">
                       {emp.id}
-                    </td>
+                    </td> */}
                     <td className="px-4 py-3">
                       <Link
                         to={`/employees/${emp.id}`}
@@ -323,7 +323,9 @@ function EmployeesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <Badge
-                        variant={emp.status === "Active" ? "success" : "warning"}
+                        variant={
+                          emp.status === "Active" ? "success" : "warning"
+                        }
                       >
                         {emp.status}
                       </Badge>
