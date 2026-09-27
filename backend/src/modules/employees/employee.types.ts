@@ -1,9 +1,8 @@
-import { EmployeeDepartment, EmployeeStatus } from "@prisma/client";
+import { EmployeeStatus } from "@prisma/client";
 
 export interface CreateEmployeeDTO {
     name: string;
     email: string;
-    department: EmployeeDepartment;
     role: string;
     status?: EmployeeStatus;
     password?: string;
@@ -12,7 +11,6 @@ export interface CreateEmployeeDTO {
 export interface UpdateEmployeeDTO {
     name?: string;
     email?: string;
-    department?: EmployeeDepartment;
     role?: string;
     status?: EmployeeStatus;
     isSuperAdmin?: boolean;
@@ -22,7 +20,6 @@ export interface GetEmployeesQueryDTO {
     page?: string;
     limit?: string;
     search?: string;
-    department?: string;
     all?: string;
 }
 

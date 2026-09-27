@@ -1,11 +1,10 @@
 // backend/src/modules/auth/auth.types.ts
-import { EmployeeDepartment, EmployeeStatus } from "@prisma/client";
+import { EmployeeStatus } from "@prisma/client";
 
 export interface RegisterDTO {
     name: string;
     email: string;
     password: string;
-    department?: EmployeeDepartment;
     role?: string;
 }
 
@@ -19,13 +18,22 @@ export interface ForgotPasswordDTO {
     newPassword: string;
 }
 
+export interface UpdateProfileDTO {
+    name?: string;
+    role?: string;
+}
+
+export interface ChangePasswordDTO {
+    currentPassword: string;
+    newPassword: string;
+}
+
 export interface AuthResponseData {
     token: string;
     user: {
         id: string;
         name: string;
         email: string;
-        department: EmployeeDepartment;
         role: string;
         status: EmployeeStatus;
         isSuperAdmin: boolean;

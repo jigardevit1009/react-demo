@@ -38,6 +38,24 @@ export class AuthController extends BaseController {
         }
     };
 
+    updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const updated = await this.service.updateProfile(req.user!.id, req.body);
+            return this.sendSuccess(res, "Profile updated successfully", updated);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    changePassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            await this.service.changePassword(req.user!.id, req.body);
+            return this.sendSuccess(res, "Password changed successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+
     forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
         try {
             await this.service.resetPassword(req.body);

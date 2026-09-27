@@ -1,15 +1,17 @@
 export interface ReportJobPayload {
     jobId: string;
     userId: string;
-    reportType: string;
+    reportType: "TASKS_CSV" | "FULL_ANALYTICS_CSV" | string;
+    isAdmin?: boolean;
     requestedAt: string;
 }
 
 export interface ReportJobResult {
     jobId: string;
     status: "COMPLETED" | "FAILED";
-    totalEmployees: number;
     totalTasks: number;
+    totalEmployees?: number;
     generatedAt: string;
     downloadUrl: string;
+    filename?: string;
 }

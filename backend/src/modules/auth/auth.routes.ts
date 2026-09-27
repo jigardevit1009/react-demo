@@ -9,5 +9,7 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.post("/forgot-password", authController.forgotPassword);
 router.get("/me", authenticateJWT, authController.getMe);
+router.put("/profile", authenticateJWT, authController.updateProfile);
+router.put("/change-password", authenticateJWT, authController.changePassword);
 
 export default router;

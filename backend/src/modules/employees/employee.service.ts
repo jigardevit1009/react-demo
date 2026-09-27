@@ -1,24 +1,24 @@
-import bcrypt from "bcryptjs";
 import prisma from "../../config/prisma";
 import { AppError } from "../../common/AppError";
+import { hashPassword } from "../../utils/password.util";
 import {
     CreateEmployeeDTO,
     UpdateEmployeeDTO,
     GetEmployeesQueryDTO,
     PaginatedEmployeesResult,
 } from "./employee.types";
-import { EmployeeDepartment, EmployeeStatus, Prisma } from "@prisma/client";
+import { EmployeeStatus, Prisma } from "@prisma/client";
 
 export class EmployeeService {
     //Get Paginated & Filtered Employees (or All for dropdowns)
     async getEmployees(query: GetEmployeesQueryDTO): Promise<PaginatedEmployeesResult | any[]> {
 
-        const { page = "1", limit = "10", search, department, all } = query;
+        const { page = "1", limit = "10", search, all } = query;
 
         // Fast path: Return all employees for task assignee picker
         if (all === "true") {
             return prisma.employee.findMany({
-                select: { id: true, name: true, email: true, department: true, role: true },
+                select: { id: true, name: true, email: true, role: true },
                 orderBy: { name: "asc" },
             });
         }
@@ -28,10 +28,6 @@ export class EmployeeService {
 
         // Dynamic Prisma Where Filter
         const where: Prisma.EmployeeWhereInput = {};
-
-        if (department && department !== "ALL") {
-            where.department = department as EmployeeDepartment;
-        }
 
         if (search && typeof search === "string" && search.trim() !== "") {
             where.OR = [
@@ -50,7 +46,6 @@ export class EmployeeService {
                     id: true,
                     name: true,
                     email: true,
-                    department: true,
                     role: true,
                     status: true,
                     isSuperAdmin: true,
@@ -92,7 +87,7 @@ export class EmployeeService {
 
     //Create Employee
     async createEmployee(data: CreateEmployeeDTO) {
-        const { name, email, department, role, status, password = "Welcome@123" } = data;
+        const { name, email, role, status, password = "Welcome@123" } = data;
 
         if (!name || !email) {
             throw new AppError("Name and email are required", 400);
@@ -103,15 +98,13 @@ export class EmployeeService {
             throw new AppError("An employee with this email already exists", 400);
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await hashPassword(password);
 
         const employee = await prisma.employee.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
-                department: department || EmployeeDepartment.Engineering,
                 role: role || "Software Developer",
                 status: status || EmployeeStatus.Active,
                 isSuperAdmin: false,
@@ -124,7 +117,7 @@ export class EmployeeService {
 
     //Update Employee
     async updateEmployee(id: string, data: UpdateEmployeeDTO) {
-        const { name, email, department, role, status, isSuperAdmin } = data;
+        const { name, email, role, status, isSuperAdmin } = data;
 
         // Check if employee exists
         const existing = await prisma.employee.findUnique({ where: { id } });
@@ -137,7 +130,6 @@ export class EmployeeService {
             data: {
                 ...(name && { name }),
                 ...(email && { email }),
-                ...(department && { department }),
                 ...(role && { role }),
                 ...(status && { status }),
                 ...(isSuperAdmin !== undefined && { isSuperAdmin: Boolean(isSuperAdmin) }),

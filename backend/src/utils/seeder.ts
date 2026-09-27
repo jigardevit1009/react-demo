@@ -1,7 +1,6 @@
-import bcrypt from "bcryptjs";
 import prisma from "../config/prisma";
+import { hashPassword } from "./password.util";
 import {
-    EmployeeDepartment,
     EmployeeStatus,
     Priority,
     TaskStatus,
@@ -15,16 +14,15 @@ async function seed() {
     await prisma.employee.deleteMany();
     console.log("Cleaned existing records.");
 
-    const adminPassword = await bcrypt.hash("Admin@123", 10);
-    const userPassword = await bcrypt.hash("User@123", 10);
+    const adminPassword = await hashPassword("Admin@123");
+    const userPassword = await hashPassword("User@123");
 
     // Create SuperAdmin
     const admin = await prisma.employee.create({
         data: {
             name: "Super Admin",
-            email: "admin@productivityhub.com",
+            email: "admin@tasktrack.com",
             password: adminPassword,
-            department: EmployeeDepartment.Engineering,
             role: "System Administrator",
             status: EmployeeStatus.Active,
             isSuperAdmin: true, // SuperAdmin Privileges
@@ -38,7 +36,6 @@ async function seed() {
             name: "Sarah Connor",
             email: "sarah@company.com",
             password: userPassword,
-            department: EmployeeDepartment.Engineering,
             role: "Software Developer",
             status: EmployeeStatus.Active,
             isSuperAdmin: false,
@@ -50,7 +47,6 @@ async function seed() {
             name: "Michael Scott",
             email: "michael@company.com",
             password: userPassword,
-            department: EmployeeDepartment.Sales,
             role: "Software Developer",
             status: EmployeeStatus.Active,
             isSuperAdmin: false,
@@ -62,7 +58,6 @@ async function seed() {
             name: "Pam Beesly",
             email: "pam@company.com",
             password: userPassword,
-            department: EmployeeDepartment.Design,
             role: "Software Developer",
             status: EmployeeStatus.Active,
             isSuperAdmin: false,
@@ -110,7 +105,7 @@ async function seed() {
     console.log("Created sample tasks.");
 
     console.log("\n==========================================");
-    console.log("SuperAdmin : admin@productivityhub.com / Admin@123");
+    console.log("SuperAdmin : admin@tasktrack.com / Admin@123");
     console.log("Employee 1 : sarah@company.com / User@123");
     console.log("Employee 2 : michael@company.com / User@123");
     console.log("==========================================\n");
