@@ -14,8 +14,17 @@ export interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | null>(null);
 
-const SOCKET_URL =
-  (import.meta.env.VITE_SOCKET_URL as string) || "http://localhost:5000";
+const getSocketUrl = (): string => {
+  if (import.meta.env.VITE_SOCKET_URL) {
+    return import.meta.env.VITE_SOCKET_URL as string;
+  }
+  if (import.meta.env.VITE_API_URL) {
+    return (import.meta.env.VITE_API_URL as string).replace(/\/api\/?$/, "");
+  }
+  return "http://localhost:5000";
+};
+
+const SOCKET_URL = getSocketUrl();
 
 export function SocketProvider({ children }: { children: ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
