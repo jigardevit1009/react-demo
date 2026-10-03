@@ -35,9 +35,13 @@ function Toast({ notification, onDismiss }: ToastProps) {
 
   const handleDownload = () => {
     if (downloadUrl) {
+      const backendBaseUrl =
+        (import.meta.env.VITE_SOCKET_URL as string) ||
+        ((import.meta.env.VITE_API_URL as string)?.replace(/\/api\/?$/, "")) ||
+        "http://localhost:5000";
       const fullUrl = downloadUrl.startsWith("http")
         ? downloadUrl
-        : `http://localhost:5000${downloadUrl}`;
+        : `${backendBaseUrl}${downloadUrl}`;
       window.open(fullUrl, "_blank");
     }
     onDismiss();

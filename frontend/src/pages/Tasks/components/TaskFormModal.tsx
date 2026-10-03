@@ -89,7 +89,7 @@ export function TaskFormModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? `Edit Task ${initialTask?.id}` : "Create New Task"}
+      title={isEditing ? `Edit Task` : "Create New Task"}
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div>
