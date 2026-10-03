@@ -46,7 +46,7 @@ app.use(errorHandler);
 
 // Start HTTP + WebSocket Server
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📡 API Endpoints live at http://localhost:${PORT}/api`);
-  console.log(`⚡ Socket.IO listening for real-time WebSocket events`);
+  console.log(`---- Server running on http://localhost:${PORT} ----`);
+  console.log(`---- API Endpoints live at http://localhost:${PORT}/api ----`);
+  console.log(`---- Socket.IO listening for real-time WebSocket events ----`);
 });

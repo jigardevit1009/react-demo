@@ -85,7 +85,7 @@ export function EmployeeFormModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? `Edit Employee ${initialEmployee?.id}` : "Add New Employee"}
+      title={isEditing ? `Edit Employee` : "Add New Employee"}
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         {errorMessage && (
@@ -95,14 +95,14 @@ export function EmployeeFormModal({
         )}
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Full Name <span className="text-red-500">*</span>
+            Employee Name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            placeholder="e.g. Jordan Bell"
+            placeholder="e.g FirstName MiddleName LastName"
             className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
               formErrors.name
                 ? "border-rose-500 focus:ring-rose-500"
@@ -125,7 +125,7 @@ export function EmployeeFormModal({
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            placeholder="jordan.b@company.com"
+            placeholder=""
             className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
               formErrors.email
                 ? "border-rose-500 focus:ring-rose-500"
