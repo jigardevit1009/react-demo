@@ -1,6 +1,6 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User as UserIcon, Mail, Lock, Eye, EyeOff, Briefcase } from "lucide-react";
+import { User as UserIcon, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { loginSuccess } from "../../store/authSlice";
 import { useRegisterMutation } from "../../store/api/authApiSlice";
@@ -17,7 +17,6 @@ function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "Developer",
     password: "",
     confirmPassword: "",
   });
@@ -34,7 +33,7 @@ function RegisterPage() {
   }, [isAuthenticated, navigate]);
 
   const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -86,7 +85,6 @@ function RegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
       }).unwrap();
 
       dispatch(
@@ -132,7 +130,7 @@ function RegisterPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="e.g. Jigar Patel"
+                placeholder="e.g. FirstName MiddleName LastName"
                 className={`w-full pl-10 pr-3.5 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
                   formErrors.name
                     ? "border-rose-500 focus:ring-rose-500"
@@ -150,7 +148,7 @@ function RegisterPage() {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email Address <span className="text-red-500">*</span>
+              Email <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -158,7 +156,7 @@ function RegisterPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="name@company.com"
+                placeholder="abc@yopmail.com"
                 className={`w-full pl-10 pr-3.5 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
                   formErrors.email
                     ? "border-rose-500 focus:ring-rose-500"
@@ -176,29 +174,7 @@ function RegisterPage() {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Primary Role
-            </label>
-            <div className="relative">
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-3.5 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-              >
-                <option value="Developer">Software Developer</option>
-                <option value="Lead Engineer">Lead Engineer</option>
-                <option value="UI/UX Designer">UI/UX Designer</option>
-                <option value="Product Manager">Product Manager</option>
-                <option value="QA Engineer">QA Engineer</option>
-                <option value="Administrator">Administrator</option>
-              </select>
-              <Briefcase className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Password (min. 6 characters) <span className="text-red-500">*</span>
+              Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input

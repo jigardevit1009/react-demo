@@ -232,21 +232,3 @@ cd frontend
 npm install
 npm run dev             # Start Vite dev server on http://localhost:5173
 ```
-
----
-
-## 🏆 Presentation Guide & Technical Q&A
-
-### 🎯 30-Second Elevator Pitch
-> *"TaskTrack is an enterprise-grade task and employee productivity dashboard built on React 19, TypeScript, and Node.js. It decouples long-running operations using RabbitMQ over the AMQP protocol, keeps clients synchronized via real-time WebSockets with Socket.io, utilizes a hybrid state architecture of RTK Query and Context API, and is protected by an automated GitHub Actions CI/CD monorepo pipeline deployed to Vercel and Render."*
-
-### ❓ Key Technical Questions & Answers
-
-**Q1: Why use RabbitMQ instead of generating CSV exports directly in the HTTP request?**
-> *"Large report generation is CPU- and I/O-intensive. Generating it synchronously blocks Node's event loop and risks gateway timeouts (HTTP 504) on cloud platforms. RabbitMQ over AMQP decouples the request: the API acknowledges the job in under 10ms, while a background consumer worker handles data extraction and pushes the completed file via WebSockets."*
-
-**Q2: When do you choose Redux Toolkit vs. React Context API?**
-> *"We use RTK Query for server-side cached state because it provides query deduplication, optimistic updates, and tag-based cache invalidation out of the box. We reserve Context API for global client concerns that have low update frequency and don't need complex caching, such as Theme toggling and the singleton Socket.io connection."*
-
-**Q3: How does your GitHub Actions CI/CD setup support a monorepo?**
-> *"The workflow runs parallel validation jobs for both `frontend/` and `backend/`. It executes strict TypeScript compilation, Prisma client generation, and Vite production bundling on clean Linux runners. This guarantees that broken code, missing dependencies, or syntax errors are caught before code is merged or deployed to Vercel and Render."*

@@ -77,7 +77,7 @@ jobs:
   deploy-render:
     name: Deploy Backend to Render
     needs: [frontend-ci, backend-ci]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deploy Webhook
