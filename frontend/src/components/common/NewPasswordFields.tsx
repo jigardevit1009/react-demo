@@ -1,5 +1,6 @@
 import { memo } from "react";
 import PasswordInput from "./PasswordInput";
+import PasswordStrengthMeter from "./PasswordStrengthMeter";
 
 export interface NewPasswordFieldsProps {
   password: string;
@@ -14,6 +15,7 @@ export interface NewPasswordFieldsProps {
   confirmPasswordPlaceholder?: string;
   showConfirmToggle?: boolean;
   disabled?: boolean;
+  showStrength?: boolean;
 }
 
 export const NewPasswordFields = memo(function NewPasswordFields({
@@ -23,27 +25,33 @@ export const NewPasswordFields = memo(function NewPasswordFields({
   onConfirmPasswordChange,
   passwordError,
   confirmPasswordError,
-  passwordLabel = "New Password (min. 6 characters)",
+  passwordLabel = "New Password",
   confirmPasswordLabel = "Confirm New Password",
-  passwordPlaceholder = "Enter new strong password",
+  passwordPlaceholder = "Enter new password",
   confirmPasswordPlaceholder = "Repeat new password",
   showConfirmToggle = false,
   disabled = false,
+  showStrength = true,
 }: NewPasswordFieldsProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* 1. New Password Field */}
-      <PasswordInput
-        label={passwordLabel}
-        required
-        value={password}
-        onChange={onPasswordChange}
-        placeholder={passwordPlaceholder}
-        error={passwordError}
-        showToggle={true}
-        autoComplete="new-password"
-        disabled={disabled}
-      />
+      <div>
+        <PasswordInput
+          label={passwordLabel}
+          required
+          value={password}
+          onChange={onPasswordChange}
+          placeholder={passwordPlaceholder}
+          error={passwordError}
+          showToggle={true}
+          autoComplete="new-password"
+          disabled={disabled}
+        />
+        {showStrength && (
+          <PasswordStrengthMeter password={password} showRules={true} />
+        )}
+      </div>
 
       {/* 2. Confirm Password Field */}
       <PasswordInput

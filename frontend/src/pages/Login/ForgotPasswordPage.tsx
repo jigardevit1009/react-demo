@@ -109,7 +109,7 @@ function ForgotPasswordPage() {
           <form onSubmit={handleResetPassword} noValidate className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Account Email Address <span className="text-red-500">*</span>
+                Email <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input

@@ -12,18 +12,46 @@ import {
 } from "./auth.types";
 import { EmployeeStatus } from "@prisma/client";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateEmail(email: string): string {
+    if (!email || !email.trim()) {
+        throw new AppError("Email is required", 400);
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    if (!EMAIL_REGEX.test(cleanEmail)) {
+        throw new AppError("Please provide a valid email address", 400);
+    }
+    return cleanEmail;
+}
+
+function validatePassword(password: string, fieldName = "Password"): void {
+    if (!password || password.trim().length === 0) {
+        throw new AppError(`${fieldName} is required`, 400);
+    }
+    if (password.length < 6) {
+        throw new AppError(`${fieldName} must be at least 6 characters long`, 400);
+    }
+}
+
 export class AuthService {
 
     // Register Business Logic
     async register(data: RegisterDTO): Promise<AuthResponseData> {
         const { name, email, password, role } = data;
 
-        if (!name || !email || !password) {
-            throw new AppError("Name, email, and password are required", 400);
+        if (!name || !name.trim()) {
+            throw new AppError("Full name is required", 400);
+        }
+        if (name.trim().length < 2) {
+            throw new AppError("Full name must be at least 2 characters long", 400);
         }
 
+        const normalizedEmail = validateEmail(email);
+        validatePassword(password, "Password");
+
         // Check if email already exists
-        const existing = await prisma.employee.findUnique({ where: { email } });
+        const existing = await prisma.employee.findUnique({ where: { email: normalizedEmail } });
         if (existing) {
             throw new AppError("An account with this email already exists", 400);
         }
@@ -34,11 +62,11 @@ export class AuthService {
         // Create new Employee (default isSuperAdmin = false)
         const employee = await prisma.employee.create({
             data: {
-                name,
-                email,
+                name: name.trim(),
+                email: normalizedEmail,
                 password: hashedPassword,
-                role: role || "Software Developer",
-                status: EmployeeStatus.Active || "Active",
+                role: role?.trim() || "Software Developer",
+                status: EmployeeStatus.Active,
                 isSuperAdmin: false,
             },
         });
@@ -63,11 +91,13 @@ export class AuthService {
     async login(data: LoginDTO): Promise<AuthResponseData> {
         const { email, password } = data;
 
-        if (!email || !password) {
-            throw new AppError("Email and password are required", 400);
+        if (!password) {
+            throw new AppError("Password is required", 400);
         }
 
-        const employee = await prisma.employee.findUnique({ where: { email } });
+        const normalizedEmail = validateEmail(email);
+
+        const employee = await prisma.employee.findUnique({ where: { email: normalizedEmail } });
         if (!employee) {
             throw new AppError("Invalid email or password", 401);
         }
@@ -149,12 +179,14 @@ export class AuthService {
     async changePassword(userId: string, data: ChangePasswordDTO): Promise<void> {
         const { currentPassword, newPassword } = data;
 
-        if (!currentPassword || !newPassword) {
-            throw new AppError("Current password and new password are required", 400);
+        if (!currentPassword) {
+            throw new AppError("Current password is required", 400);
         }
 
-        if (newPassword.length < 6) {
-            throw new AppError("New password must be at least 6 characters long", 400);
+        validatePassword(newPassword, "New password");
+
+        if (currentPassword === newPassword) {
+            throw new AppError("New password must be different from current password", 400);
         }
 
         const employee = await prisma.employee.findUnique({ where: { id: userId } });
@@ -179,11 +211,10 @@ export class AuthService {
     async resetPassword(data: ForgotPasswordDTO): Promise<void> {
         const { email, newPassword } = data;
 
-        if (!email || !newPassword) {
-            throw new AppError("Email and new password are required", 400);
-        }
+        const normalizedEmail = validateEmail(email);
+        validatePassword(newPassword, "New password");
 
-        const employee = await prisma.employee.findUnique({ where: { email } });
+        const employee = await prisma.employee.findUnique({ where: { email: normalizedEmail } });
         if (!employee) {
             throw new AppError("No account found with that email", 404);
         }
@@ -191,7 +222,7 @@ export class AuthService {
         const hashedPassword = await hashPassword(newPassword);
 
         await prisma.employee.update({
-            where: { email },
+            where: { email: normalizedEmail },
             data: { password: hashedPassword },
         });
     }
