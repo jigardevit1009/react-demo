@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { loginSuccess } from "../../store/authSlice";
 import { useRegisterMutation } from "../../store/api/authApiSlice";
 import Button from "../../components/common/Button";
+import PasswordStrengthMeter from "../../components/common/PasswordStrengthMeter";
 import { getErrorMessage } from "../../utils/error";
 
 function RegisterPage() {
@@ -208,6 +209,9 @@ function RegisterPage() {
                 {formErrors.password}
               </p>
             )}
+
+            {/* Live Password Strength Meter & Criteria Checklist */}
+            <PasswordStrengthMeter password={formData.password} showRules={true} />
           </div>
 
           <div>

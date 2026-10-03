@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, CheckSquare, LogOut, LucideIcon } from "lucide-react";
+import { LayoutDashboard, Users, CheckSquare, LucideIcon } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../store/store";
 import { logout } from "../../store/authSlice";
 import { useTheme } from "../../context/ThemeContext";
@@ -65,20 +65,6 @@ function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Logout Button */}
-      <button
-        type="button"
-        onClick={handleLogout}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-          isDark
-            ? "bg-red-950/40 text-red-400 hover:bg-red-950/70 border border-red-900/40"
-            : "bg-red-50 text-red-700 hover:bg-red-100"
-        }`}
-      >
-        <LogOut className="w-4 h-4 shrink-0" />
-        <span>Logout</span>
-      </button>
     </aside>
   );
 }
