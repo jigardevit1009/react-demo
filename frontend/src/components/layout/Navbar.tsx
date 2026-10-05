@@ -8,12 +8,19 @@ import {
   ChevronDown,
   Shield,
   Briefcase,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../store/store";
 import { logout } from "../../store/authSlice";
 import { useTheme } from "../../context/ThemeContext";
 
-function Navbar() {
+interface NavbarProps {
+  isMobileMenuOpen?: boolean;
+  onToggleMobileMenu?: () => void;
+}
+
+function Navbar({ isMobileMenuOpen = false, onToggleMobileMenu }: NavbarProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -68,21 +75,34 @@ function Navbar() {
 
   return (
     <header
-      className={`h-16 border-b px-6 flex items-center justify-between sticky top-0 z-20 transition-colors duration-200 ${
+      className={`h-16 border-b px-3.5 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-200 ${
         isDark
           ? "bg-gray-900 border-gray-800 text-white"
           : "bg-white border-gray-200 text-gray-900"
       }`}
     >
-      {/* Brand */}
-      <div className="flex items-center gap-3">
-        <h2 className="text-lg font-bold tracking-tight">
+      {/* Brand & Mobile Hamburger */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <button
+          type="button"
+          onClick={onToggleMobileMenu}
+          className="p-2 -ml-1 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 md:hidden cursor-pointer"
+          aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMobileMenuOpen}
+        >
+          {isMobileMenuOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
+        </button>
+        <h2 className="text-lg font-bold tracking-tight select-none">
           Task<span className="text-blue-500">Track</span>
         </h2>
       </div>
 
       {/* Right Controls: Theme Toggle + User Profile Dropdown */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Context API Theme Toggle Button with Lucide Icons */}
         <button
           type="button"
@@ -156,7 +176,7 @@ function Navbar() {
           {/* Dropdown Menu Modal / Popover */}
           {isDropdownOpen && (
             <div
-              className={`absolute right-0 top-full mt-2 w-64 rounded-2xl shadow-2xl border py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
+              className={`absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl shadow-2xl border py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
                 isDark
                   ? "bg-gray-900 border-gray-800 text-gray-100 divide-gray-800"
                   : "bg-white border-gray-200 text-gray-900 divide-gray-100"

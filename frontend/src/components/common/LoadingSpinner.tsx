@@ -18,7 +18,7 @@ function LoadingSpinner({ message = "Loading view..." }: LoadingSpinnerProps) {
           {message}
         </p>
         <p className="text-xs text-gray-400">
-          Downloading on-demand JavaScript chunk via React.lazy()
+          Downloading via React.lazy()
         </p>
       </div>
     </div>

@@ -54,14 +54,14 @@ function TaskDetailPage() {
         badge={`${task.id}`}
       >
         <div className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-800">
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase">Assigned To</p>
               <h3 className="text-base font-bold text-gray-900 dark:text-white mt-0.5">
                 {task.employee?.name || task.assignee || "Unassigned"}
               </h3>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <TaskPriorityBadge priority={task.priority} showSuffix />
               <TaskStatusBadge status={task.status} />
             </div>

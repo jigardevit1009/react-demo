@@ -32,8 +32,8 @@ export function TaskFilterBar({
 }: TaskFilterBarProps) {
   return (
     <Card>
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="w-full md:w-80 relative">
+      <div className="flex flex-col lg:flex-row gap-3.5 sm:gap-4 items-stretch lg:items-center justify-between">
+        <div className="w-full lg:w-80 relative">
           <input
             type="text"
             placeholder="Search tasks..."
@@ -53,12 +53,12 @@ export function TaskFilterBar({
           )}
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex items-center gap-2.5 sm:gap-3 w-full lg:w-auto">
           {isAdmin ? (
             <select
               value={assigneeFilter}
               onChange={(e: ChangeEvent<HTMLSelectElement>) => onAssigneeChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="w-full lg:w-auto px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="ALL">All Assignees</option>
               <option value="UNASSIGNED">Unassigned</option>
@@ -69,7 +69,7 @@ export function TaskFilterBar({
               ))}
             </select>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 rounded-lg text-xs font-medium">
+            <div className="flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 rounded-lg text-xs font-medium">
               <span>
                 Assignee: <strong>{currentUser?.name || "You"}</strong>
               </span>
@@ -79,7 +79,7 @@ export function TaskFilterBar({
           <select
             value={statusFilter}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => onStatusChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            className="w-full lg:w-auto px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           >
             <option value="ALL">All Statuses</option>
             <option value="TODO">To Do</option>
@@ -91,7 +91,7 @@ export function TaskFilterBar({
           <select
             value={priorityFilter}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => onPriorityChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            className="w-full lg:w-auto px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           >
             <option value="ALL">All Priorities</option>
             <option value="High">High Priority</option>

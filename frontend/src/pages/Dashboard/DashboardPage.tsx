@@ -139,12 +139,12 @@ function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
               {isAdmin ? "Dashboard Overview" : "My Workspace Dashboard"}
             </h1>
             {isFetching && (
@@ -168,7 +168,7 @@ function DashboardPage() {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           {/* RabbitMQ Asynchronous Export Button (Admin Only) */}
           {isAdmin && (
             <Button
@@ -176,15 +176,15 @@ function DashboardPage() {
               size="md"
               onClick={handleExportReport}
               disabled={isExporting}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
             >
-              <Download className="w-4 h-4 text-emerald-600" />
-              {isExporting ? "Queuing Job..." : "Export Report (RabbitMQ)"}
+              <Download className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{isExporting ? "Queuing Job..." : "Export Report (RabbitMQ)"}</span>
             </Button>
           )}
 
-          <Link to="/tasks">
-            <Button variant="primary" size="md">
+          <Link to="/tasks" className="w-full sm:w-auto">
+            <Button variant="primary" size="md" className="w-full sm:w-auto justify-center">
               + Manage Tasks
             </Button>
           </Link>
@@ -192,7 +192,7 @@ function DashboardPage() {
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {isAdmin ? (
           <MetricCard
             title="Total Employees"
@@ -254,15 +254,15 @@ function DashboardPage() {
         }
         badge={`${filteredTasks.length} shown`}
       >
-        <div className="flex items-center gap-2 mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
-          <span className="text-xs font-semibold text-gray-400 mr-2 uppercase">
+        <div className="flex items-center gap-2 mb-4 border-b border-gray-100 dark:border-gray-800 pb-3 overflow-x-auto py-1">
+          <span className="text-xs font-semibold text-gray-400 mr-1 uppercase shrink-0">
             Filter:
           </span>
           {["ALL", "TODO", "IN PROGRESS", "PENDING", "COMPLETED"].map((tab) => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                 filter === tab
                   ? "bg-blue-600 text-white shadow-xs"
                   : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"

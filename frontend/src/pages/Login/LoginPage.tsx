@@ -18,8 +18,8 @@ function LoginPage() {
   const locationState = location.state as { from?: { pathname: string } } | undefined;
   const from = locationState?.from?.pathname || "/dashboard";
 
-  const [email, setEmail] = useState("jigar.patel@yopmail.com");
-  const [password, setPassword] = useState("Jigar@123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
@@ -67,8 +67,8 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4 transition-colors">
-      <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-xl p-8 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-3.5 sm:p-6 transition-colors">
+      <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-xl p-5 sm:p-8 transition-colors">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             Task<span className="text-blue-600">Track</span>

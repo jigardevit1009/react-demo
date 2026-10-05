@@ -6,108 +6,132 @@ import {
     TaskStatus,
 } from "@prisma/client";
 
+const ACTIONS = [
+    "Implement", "Refactor", "Optimize", "Build", "Configure",
+    "Design", "Audit", "Deploy", "Test", "Integrate",
+    "Automate", "Upgrade", "Secure", "Monitor", "Migrate",
+    "Enhance", "Document", "Benchmark", "Debug", "Streamline"
+];
+
+const TOPICS = [
+    "JWT Authentication & Session Expiry Guard",
+    "PostgreSQL Indexing & Query Latency Optimization",
+    "RabbitMQ Message Broker & Retry Dead-Letter Queues",
+    "Real-Time Socket.IO Live Status Broadcasting",
+    "Dark Mode Theme Switching & Responsive Layout",
+    "Mobile Responsive Drawer Navigation",
+    "Docker Multi-Stage Container Build Pipeline",
+    "REST API Rate Limiting & Brute Force Shield",
+    "Redis In-Memory Caching for User Sessions",
+    "End-to-End Automated Test Suite & Coverage",
+    "Employee Directory Role & Permission Management",
+    "Automated CSV & PDF Report Export Worker",
+    "Redux Toolkit Global State Hydration",
+    "CloudWatch Metrics Monitoring & Alert System",
+    "Role-Based Access Control (RBAC) Route Security",
+    "Database Disaster Recovery & Backup Routine",
+    "Payment Gateway Webhook Handling & Idempotency",
+    "Webpack & Vite Bundle Size Code Splitting",
+    "Background Cron Worker for Task Due Date Reminders",
+    "Cross-Site Scripting (XSS) & CSRF Vulnerability Fix",
+    "Email Notification Engine for Assigned Deliverables",
+    "Microservice API Gateway Routing & SSL Termination",
+    "Kubernetes Ingress & Pod Auto-Scaling Configuration",
+    "GraphQL Mutation Resolvers & Input Validation",
+    "Client-Side Form Debouncing & Search Filter"
+];
+
+const DESCRIPTIONS = [
+    "Ensure high availability, comprehensive test coverage, and documentation for upcoming release.",
+    "Refactor legacy logic into maintainable utility modules following SOLID design principles.",
+    "Benchmark response latency under peak load and eliminate bottlenecks in database queries.",
+    "Coordinate with frontend and backend developers to ensure end-to-end integration.",
+    "Review security compliance, encryption standards, and sensitive credential isolation.",
+    "Add detailed logging and tracing metrics to monitor errors and performance in production.",
+    "Implement automated recovery mechanisms and graceful failure handling.",
+    "Optimize memory consumption and ensure resource cleanup on process shutdown."
+];
+
+const PRIORITIES: Priority[] = [Priority.HIGH, Priority.MEDIUM, Priority.LOW];
+const STATUSES: TaskStatus[] = [
+    TaskStatus.TODO,
+    TaskStatus.IN_PROGRESS,
+    TaskStatus.PENDING,
+    TaskStatus.COMPLETED,
+];
+
+function generate500Tasks() {
+    const tasks = [];
+    const now = Date.now();
+
+    for (let i = 1; i <= 500; i++) {
+        const action = ACTIONS[(i * 7) % ACTIONS.length];
+        const topic = TOPICS[(i * 11) % TOPICS.length];
+        const description = DESCRIPTIONS[i % DESCRIPTIONS.length];
+        const priority = PRIORITIES[i % PRIORITIES.length];
+        const status = STATUSES[i % STATUSES.length];
+
+        // Stagger due dates between -10 days (past due) to +60 days (future)
+        const dayOffset = (i % 70) - 10;
+        const dueDate = new Date(now + dayOffset * 24 * 60 * 60 * 1000);
+
+        tasks.push({
+            title: `${action} ${topic} #${i}`,
+            description: `${description} (Task ID #${i})`,
+            priority,
+            status,
+            dueDate,
+            assignedTo: null, // All tasks explicitly unassigned as requested
+        });
+    }
+
+    return tasks;
+}
+
 async function seed() {
     console.log("Starting Database Seeding...");
 
-    // Clean existing records (optional)
-    await prisma.task.deleteMany();
-    await prisma.employee.deleteMany();
-    console.log("Cleaned existing records.");
+    // 1. Clean existing tasks
+    const deletedTasks = await prisma.task.deleteMany();
+    console.log(`Cleaned ${deletedTasks.count} existing tasks.`);
 
+    // 2. Ensure SuperAdmin exists (without adding extra employees)
     const adminPassword = await hashPassword("Admin@123");
-    const userPassword = await hashPassword("User@123");
-
-    // Create SuperAdmin
-    const admin = await prisma.employee.create({
-        data: {
+    const admin = await prisma.employee.upsert({
+        where: { email: "admin@tasktrack.com" },
+        update: {
+            isSuperAdmin: true,
+            status: EmployeeStatus.Active,
+        },
+        create: {
             name: "Super Admin",
             email: "admin@tasktrack.com",
             password: adminPassword,
             role: "System Administrator",
             status: EmployeeStatus.Active,
-            isSuperAdmin: true, // SuperAdmin Privileges
+            isSuperAdmin: true,
         },
     });
-    console.log("Created SuperAdmin:", admin.email);
+    console.log(`Verified SuperAdmin account: ${admin.email}`);
 
-    // Create Sample Employees
-    const emp1 = await prisma.employee.create({
-        data: {
-            name: "Sarah Connor",
-            email: "sarah@company.com",
-            password: userPassword,
-            role: "Software Developer",
-            status: EmployeeStatus.Active,
-            isSuperAdmin: false,
-        },
-    });
+    // 3. Generate 500 Unassigned Tasks
+    console.log("Generating 500 unassigned tasks...");
+    const taskData = generate500Tasks();
 
-    const emp2 = await prisma.employee.create({
-        data: {
-            name: "Michael Scott",
-            email: "michael@company.com",
-            password: userPassword,
-            role: "Software Developer",
-            status: EmployeeStatus.Active,
-            isSuperAdmin: false,
-        },
-    });
-
-    const emp3 = await prisma.employee.create({
-        data: {
-            name: "Pam Beesly",
-            email: "pam@company.com",
-            password: userPassword,
-            role: "Software Developer",
-            status: EmployeeStatus.Active,
-            isSuperAdmin: false,
-        },
-    });
-    console.log("Created sample employees.");
-
-    // Create Sample Tasks
-    await prisma.task.createMany({
-        data: [
-            {
-                title: "Build Responsive Navbar & Dark Mode",
-                description: "Configure Tailwind CSS v4 dark mode variant and mobile drawer.",
-                priority: Priority.HIGH,
-                status: TaskStatus.COMPLETED,
-                dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-                assignedTo: emp1.id,
-            },
-            {
-                title: "Setup Prisma ORM & Database Indexing",
-                description: "Link PostgreSQL schema with 1-to-many relationship and composite indexes.",
-                priority: Priority.HIGH,
-                status: TaskStatus.IN_PROGRESS,
-                dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-                assignedTo: emp1.id,
-            },
-            {
-                title: "Q3 Enterprise Sales Strategy Review",
-                description: "Compile client pipeline metrics for quarterly executive meeting.",
-                priority: Priority.MEDIUM,
-                status: TaskStatus.PENDING,
-                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                assignedTo: emp2.id,
-            },
-            {
-                title: "Design System UI Kit in Figma",
-                description: "Create reusable buttons, badges, modals, and card components.",
-                priority: Priority.LOW,
-                status: TaskStatus.IN_PROGRESS,
-                dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-                assignedTo: emp3.id,
-            },
-        ],
-    });
-    console.log("Created sample tasks.");
+    // Insert in batches of 100 for optimal performance
+    const batchSize = 100;
+    for (let i = 0; i < taskData.length; i += batchSize) {
+        const batch = taskData.slice(i, i + batchSize);
+        await prisma.task.createMany({
+            data: batch,
+        });
+        console.log(`Inserted tasks ${i + 1} to ${Math.min(i + batchSize, taskData.length)}...`);
+    }
 
     console.log("\n==========================================");
-    console.log("SuperAdmin : admin@tasktrack.com / Admin@123");
-    console.log("Employee 1 : sarah@company.com / User@123");
-    console.log("Employee 2 : michael@company.com / User@123");
+    console.log("✅ Successfully seeded 500 Unassigned Tasks!");
+    console.log(`👤 SuperAdmin: ${admin.email} (Password: Admin@123)`);
+    console.log("👥 Sample employees: None added (Ready for manual addition)");
     console.log("==========================================\n");
 
     process.exit(0);
