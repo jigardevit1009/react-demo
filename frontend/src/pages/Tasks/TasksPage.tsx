@@ -179,8 +179,8 @@ function TasksPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
               {isAdmin ? "Task Management Board" : "My Assigned Tasks"}
             </h1>
             {!isAdmin && (
@@ -195,16 +195,16 @@ function TasksPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {/* RabbitMQ AMQP Task Export Button */}
           <Button
             variant="secondary"
             size="md"
             onClick={handleExportTasks}
             disabled={isExporting}
-            className="flex items-center gap-1.5 cursor-pointer"
+            className="flex items-center justify-center gap-1.5 cursor-pointer flex-1 sm:flex-initial"
           >
-            <Download className={`w-3.5 h-3.5 text-emerald-600 ${isExporting ? "animate-bounce" : ""}`} />
+            <Download className={`w-3.5 h-3.5 text-emerald-600 shrink-0 ${isExporting ? "animate-bounce" : ""}`} />
             <span>{isExporting ? "Queuing Job..." : "Export Tasks (RabbitMQ)"}</span>
           </Button>
 
@@ -213,19 +213,19 @@ function TasksPage() {
             size="md"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="cursor-pointer flex items-center gap-1.5"
+            className="cursor-pointer flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
           >
             <RotateCw
-              className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`}
+              className={`w-3.5 h-3.5 shrink-0 ${isFetching ? "animate-spin" : ""}`}
             />
             <span>Refresh</span>
           </Button>
           <Button
             variant="primary"
             onClick={handleOpenAddModal}
-            className="flex items-center gap-1.5"
+            className="flex items-center justify-center gap-1.5 w-full sm:w-auto"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 shrink-0" />
             <span>Create Task</span>
           </Button>
         </div>

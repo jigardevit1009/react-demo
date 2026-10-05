@@ -68,8 +68,8 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4 transition-colors">
-      <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-xl p-8 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-3.5 sm:p-6 transition-colors">
+      <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-xl p-5 sm:p-8 transition-colors">
         <div className="text-center mb-6">
           <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-3">
             <KeyRound className="w-6 h-6" />

@@ -55,15 +55,17 @@ function EmployeeDetailPage() {
         badge={`${employee.id}`}
       >
         <div className="space-y-6">
-          <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-800">
-            <div className="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-sm">
-              {employee.name.charAt(0)}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-sm shrink-0">
+                {employee.name.charAt(0)}
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{employee.name}</h2>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{employee.role}</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{employee.name}</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{employee.role}</p>
-            </div>
-            <div className="ml-auto">
+            <div className="sm:ml-auto">
               <Badge variant={getEmployeeStatusVariant(employee.status)}>
                 {employee.status}
               </Badge>

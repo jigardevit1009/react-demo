@@ -14,7 +14,7 @@ function Card({ title, subtitle, children, className = "" }: CardProps) {
 
   return (
     <div
-      className={`rounded-xl border shadow-xs p-6 transition-colors duration-200 ${
+      className={`rounded-xl border shadow-xs p-4 sm:p-6 transition-colors duration-200 ${
         isDark
           ? "bg-gray-900 border-gray-800 text-gray-100"
           : "bg-white border-gray-200 text-gray-900"

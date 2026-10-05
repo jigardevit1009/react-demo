@@ -185,10 +185,10 @@ export function ProfilePage() {
       </div>
 
       {/* 2. Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-2 overflow-x-auto py-1">
         <button
           onClick={() => setActiveTab("profile")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === "profile"
               ? "bg-blue-600 text-white shadow-sm"
               : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -200,7 +200,7 @@ export function ProfilePage() {
 
         <button
           onClick={() => setActiveTab("password")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === "password"
               ? "bg-blue-600 text-white shadow-sm"
               : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -310,7 +310,7 @@ export function ProfilePage() {
                 type="submit"
                 variant="primary"
                 disabled={isUpdatingProfile}
-                className="px-6 py-2.5"
+                className="w-full sm:w-auto px-6 py-2.5 justify-center"
               >
                 {isUpdatingProfile ? "Saving Changes..." : "Save Profile Details"}
               </Button>
@@ -377,12 +377,12 @@ export function ProfilePage() {
               disabled={isChangingPassword}
             />
 
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
               <Button
                 type="submit"
                 variant="primary"
                 disabled={isChangingPassword}
-                className="px-6 py-2.5"
+                className="w-full sm:w-auto px-6 py-2.5 justify-center"
               >
                 {isChangingPassword ? "Updating Password..." : "Change Password"}
               </Button>

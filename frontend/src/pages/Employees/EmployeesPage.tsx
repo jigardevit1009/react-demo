@@ -110,8 +110,8 @@ function EmployeesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
               Employees Directory
             </h1>
             {isFetching && (
@@ -121,25 +121,25 @@ function EmployeesPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Button
             variant="outline"
             size="md"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="cursor-pointer flex items-center gap-1.5"
+            className="cursor-pointer flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
           >
             <RotateCw
-              className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`}
+              className={`w-3.5 h-3.5 shrink-0 ${isFetching ? "animate-spin" : ""}`}
             />
             <span>Refresh</span>
           </Button>
           <Button
             variant="primary"
             onClick={handleOpenAddModal}
-            className="flex items-center gap-1.5"
+            className="flex items-center justify-center gap-1.5 w-full sm:w-auto"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 shrink-0" />
             <span>Add Employee</span>
           </Button>
         </div>
