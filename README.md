@@ -8,14 +8,15 @@ A modern, high-performance Full-Stack Monorepo Web Application built with **Reac
 1. [Key Features](#-key-features)
 2. [Tech Stack & Dependencies](#-tech-stack--dependencies)
 3. [Architecture & Monorepo Structure](#-architecture--monorepo-structure)
-4. [Deep-Dive Technical Documentation](#-deep-dive-technical-documentation)
-5. [Real-Time WebSocket & Socket.io](#-real-time-websocket--socketio)
-6. [RabbitMQ AMQP Message Queue](#-rabbitmq-amqp-message-queue)
-7. [State Management: Redux vs. Context API](#-state-management-redux-vs-context-api)
-8. [GitHub Actions CI/CD & Cloud Hosting](#-github-actions-cicd--cloud-hosting)
-9. [API Endpoints Reference](#-api-endpoints-reference)
-10. [Getting Started & Local Setup](#-getting-started--local-setup)
-11. [Presentation Guide & Technical Q&A](#-presentation-guide--technical-qa)
+4. [Frontend Code Organization](#-frontend-code-organization)
+5. [Recent Changes (Frontend Cleanup)](#-recent-changes-frontend-cleanup)
+6. [Deep-Dive Technical Documentation](#-deep-dive-technical-documentation)
+7. [Real-Time WebSocket & Socket.io](#-real-time-websocket--socketio)
+8. [RabbitMQ AMQP Message Queue](#-rabbitmq-amqp-message-queue)
+9. [State Management: Redux vs. Context API](#-state-management-redux-vs-context-api)
+10. [GitHub Actions CI/CD & Cloud Hosting](#-github-actions-cicd--cloud-hosting)
+11. [API Endpoints Reference](#-api-endpoints-reference)
+12. [Getting Started & Local Setup](#-getting-started--local-setup)
 
 ---
 
@@ -96,27 +97,104 @@ React-Demo/
 └── frontend/
     ├── src/
     │   ├── components/
-    │   │   ├── common/          # Reusable UI (Buttons, Modals, Pagination, Badges)
-    │   │   └── layout/          # MainLayout, Navbar, Sidebar
+    │   │   ├── common/          # Generic reusable UI (see "Frontend Code Organization")
+    │   │   ├── layout/          # MainLayout, Navbar, Sidebar, AuthLayout
+    │   │   └── tasks/           # TaskTable — shared by Dashboard & Tasks pages
     │   ├── context/             # ThemeContext (Dark/Light) & SocketContext (WebSocket)
-    │   ├── hooks/               # Custom hooks (useDebounce)
+    │   ├── hooks/               # useDebounce, useTaskActions, useExportReport
     │   ├── pages/
-    │   │   ├── Dashboard/       # Productivity analytics & recent task deliverables
-    │   │   ├── Employees/       # Employee directory with pagination & modal CRUD
-    │   │   ├── Tasks/           # Task board, filters, assignees & RabbitMQ exports
-    │   │   ├── Profile/         # Profile management & password change
+    │   │   ├── Dashboard/
+    │   │   │   ├── DashboardPage.tsx
+    │   │   │   └── components/  # DashboardMetrics, MetricCard, StatusFilterTabs
+    │   │   ├── Employees/
+    │   │   │   ├── EmployeesPage.tsx, EmployeeDetailPage.tsx
+    │   │   │   └── components/  # EmployeeTable, EmployeeFormModal
+    │   │   ├── Tasks/
+    │   │   │   ├── TasksPage.tsx, TaskDetailPage.tsx
+    │   │   │   └── components/  # TaskFilterBar, TaskFormModal
+    │   │   ├── Profile/
+    │   │   │   ├── ProfilePage.tsx
+    │   │   │   └── components/  # ProfileHero, ProfileTabs, ProfileInfoForm, ChangePasswordForm
     │   │   └── Login/           # LoginPage, RegisterPage, ForgotPasswordPage
     │   ├── store/
     │   │   ├── api/             # RTK Query API slices (auth, employee, task, report)
     │   │   ├── authSlice.ts     # Client auth state & localStorage token sync
     │   │   └── store.ts         # Redux Toolkit root store
-    │   ├── utils/               # Validation, Date formatting, Error helpers
+    │   ├── utils/               # validation, task, employee, date, error, variants
     │   ├── App.tsx              # React 19 router & code-split routes
     │   └── main.tsx             # Root bootstrap with Redux, Theme, & Socket providers
     ├── vercel.json              # Vercel SPA client rewrite routing
     ├── .env.example             # Frontend environment template
     └── package.json
 ```
+
+---
+
+## 🧩 Frontend Code Organization
+
+### Where does a component go?
+
+| Location | Put it here when… | Examples |
+| :--- | :--- | :--- |
+| `components/common/` | Generic UI with **no business logic**, usable on any page | `Button`, `FormInput`, `SearchInput`, `Alert` |
+| `components/layout/` | Page shells and app chrome | `MainLayout`, `Navbar`, `AuthLayout` |
+| `components/<feature>/` | A feature component used by **more than one page** | `components/tasks/TaskTable` |
+| `pages/<Page>/components/` | A component used by **only that page** | `pages/Profile/components/ChangePasswordForm` |
+| `hooks/` | Reusable stateful logic (API calls, actions) | `useTaskActions`, `useExportReport` |
+| `utils/` | Pure helper functions (no React) | `isTaskCompleted`, `validateTitle` |
+
+### Conventions
+* **Keep every file under 300 lines.** If a page grows past that, move sections into its `components/` folder.
+* **Don't hand-write inputs, alerts or loading states** — use the shared components below so styling stays consistent.
+* **Validate on the client with `utils/validation.ts`** — sanitize while typing (`sanitizeText`, `removeWhitespace`) and validate on submit (`validateName`, `validateEmail`, `validateTitle`, `validatePasswordPair`).
+* **Don't expose infrastructure in the UI.** Notification and button text should describe what the user gets ("Report Export Started"), not how it works internally.
+
+### Reusable components (`components/common/`)
+
+| Component | Use for |
+| :--- | :--- |
+| `FormInput` | Text / email / date input with label, optional left icon, error and hint |
+| `PasswordInput` | Password field with lock icon and show/hide toggle (blocks spaces) |
+| `NewPasswordFields` | New + confirm password pair with strength meter |
+| `FormSelect` | Labeled dropdown, or a compact filter dropdown when no label is given |
+| `FormField` | Shared label / error / input styles used by the three components above |
+| `FormActions` | Cancel + Submit button row at the bottom of forms and modals |
+| `SearchInput` | Search box with icon and clear button (blocks leading / double spaces) |
+| `IconButton` | Icon-only table action with tooltip (`primary`, `success`, `danger` tones) |
+| `Alert` | Inline success / error message box |
+| `DataState` | `LoadingState`, `ErrorState`, `EmptyState` for tables and detail pages |
+| `PageHeader` | Page title row with optional badges and action buttons |
+| `Card` | Content card; `headerActions` puts filters/controls beside the title |
+
+### Shared hooks & helpers
+
+| Name | Purpose |
+| :--- | :--- |
+| `hooks/useTaskActions` | Toggle task done/undo + remove-with-confirmation, used by Dashboard & Tasks |
+| `hooks/useExportReport` | Starts a background export and shows the start / failure notifications |
+| `utils/task.ts` | `isTaskCompleted`, `normalizeStatus`, `toTaskList` (handles both API response shapes) |
+| `utils/employee.ts` | `toEmployeeList` |
+
+---
+
+## 📝 Recent Changes (Frontend Cleanup)
+
+**Form validation**
+* Whitespace handling on every form: no leading / repeated spaces in text fields, no spaces at all in email and password fields; values are trimmed before submit.
+* Stricter rules: names allow letters and `. ' -` only; task titles and roles must contain letters (e.g. `23424@#2342424` is rejected) and only common punctuation.
+* Clear, descriptive placeholders on all inputs.
+
+**UI**
+* Removed internal details from the UI: "Socket.IO Live" badge, "Syncing..." badges, Refresh buttons, and RabbitMQ / AMQP wording in export notifications (frontend and backend).
+* Content now uses the full page width (removed the fixed max-width on the layout and Profile page).
+* Filters and search moved into the table card header on Dashboard, Tasks and Employees to save vertical space.
+* Table actions are icon-only (✓ / ↶, ✎, 🗑) with hover tooltips.
+* Profile and Change Password forms use the same 3-column grid.
+
+**Code structure**
+* Split `TasksPage` (393 → 211 lines), `DashboardPage` (365 → 125) and `ProfilePage` (361 → 22) into page-level `components/`.
+* Extracted the reusable components, hooks and helpers listed above; removed duplicate code (12 hand-written inputs, 7 alert boxes, 5 loading/empty states, 2 task tables).
+* Moved `MetricCard` into `pages/Dashboard/components/`; removed the unused `Header` and `EmployeeFilterBar` components.
 
 ---
 

@@ -13,7 +13,7 @@ export interface ExportReportResult {
 
 export const reportApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Trigger asynchronous RabbitMQ AMQP report generation
+    // Queue a background report export (the user is notified via socket when it's ready)
     exportReport: builder.mutation<ExportReportResult, ExportReportParams | void>({
       query: (params) => ({
         url: "/reports/export",

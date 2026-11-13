@@ -1,7 +1,17 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import Modal from "../../../components/common/Modal";
-import Button from "../../../components/common/Button";
+import Alert from "../../../components/common/Alert";
+import FormInput from "../../../components/common/FormInput";
+import FormSelect, { SelectOption } from "../../../components/common/FormSelect";
+import FormActions from "../../../components/common/FormActions";
 import type { Employee } from "../../../types";
+import {
+  sanitizeText,
+  removeWhitespace,
+  validateName,
+  validateEmail,
+  validateTitle,
+} from "../../../utils/validation";
 
 export interface EmployeeFormData {
   name: string;
@@ -25,6 +35,11 @@ const BLANK_FORM: EmployeeFormData = {
   role: "",
   status: "Active",
 };
+
+const STATUS_OPTIONS: SelectOption[] = [
+  { value: "Active", label: "Active" },
+  { value: "Inactive", label: "Inactive" },
+];
 
 export function EmployeeFormModal({
   isOpen,
@@ -51,23 +66,23 @@ export function EmployeeFormModal({
     setFormErrors({});
   }, [initialEmployee, isOpen]);
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let cleanValue = value;
+    if (name === "email") cleanValue = removeWhitespace(value);
+    else if (name === "name" || name === "role") cleanValue = sanitizeText(value);
+    setFormData((prev) => ({ ...prev, [name]: cleanValue }));
     if (formErrors[name]) setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
-    if (!formData.name.trim()) errors.name = "Full name is required";
-    if (!formData.email.trim()) {
-      errors.email = "Email address is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
-    }
-    if (!formData.role.trim()) errors.role = "Role is required";
+    const nameErr = validateName(formData.name, "Employee name");
+    if (nameErr) errors.name = nameErr;
+    const emailErr = validateEmail(formData.email);
+    if (emailErr) errors.email = emailErr;
+    const roleErr = validateTitle(formData.role, "Role", { minLength: 2, maxLength: 60 });
+    if (roleErr) errors.role = roleErr;
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -76,123 +91,67 @@ export function EmployeeFormModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    await onSubmit(formData);
+    await onSubmit({
+      ...formData,
+      name: formData.name.trim(),
+      email: formData.email.trim().toLowerCase(),
+      role: formData.role.trim(),
+    });
   };
 
   const isEditing = Boolean(initialEmployee);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEditing ? `Edit Employee` : "Add New Employee"}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? "Edit Employee" : "Add New Employee"}>
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        {errorMessage && (
-          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-xs rounded-lg">
-            {errorMessage}
-          </div>
-        )}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Employee Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="e.g FirstName MiddleName LastName"
-            className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-              formErrors.name
-                ? "border-rose-500 focus:ring-rose-500"
-                : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-            }`}
-          />
-          {formErrors.name && (
-            <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-              {formErrors.name}
-            </p>
-          )}
-        </div>
+        <Alert variant="error">{errorMessage}</Alert>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Email Address <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder=""
-            className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-              formErrors.email
-                ? "border-rose-500 focus:ring-rose-500"
-                : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-            }`}
-          />
-          {formErrors.email && (
-            <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-              {formErrors.email}
-            </p>
-          )}
-        </div>
+        <FormInput
+          label="Employee Name"
+          required
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          placeholder="Enter employee's name"
+          error={formErrors.name}
+        />
+
+        <FormInput
+          label="Email Address"
+          required
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          placeholder="Enter employee's email address"
+          error={formErrors.email}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Role <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="role"
-              value={formData.role}
-              onChange={handleInputChange}
-              placeholder="e.g. Software Developer"
-              className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                formErrors.role
-                  ? "border-rose-500 focus:ring-rose-500"
-                  : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-              }`}
-            />
-            {formErrors.role && (
-              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-                {formErrors.role}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Status
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
+          <FormInput
+            label="Role"
+            required
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+            placeholder="Enter job role (e.g. Software Developer)"
+            error={formErrors.role}
+          />
+          <FormSelect
+            label="Status"
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            options={STATUS_OPTIONS}
+          />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" disabled={isLoading} className="w-full sm:w-auto">
-            {isLoading
-              ? isEditing
-                ? "Updating..."
-                : "Saving..."
-              : isEditing
-              ? "Save Changes"
-              : "Create Employee"}
-          </Button>
-        </div>
+        <FormActions
+          onCancel={onClose}
+          isLoading={isLoading}
+          submitLabel={isEditing ? "Save Changes" : "Create Employee"}
+          loadingLabel={isEditing ? "Updating..." : "Saving..."}
+        />
       </form>
     </Modal>
   );

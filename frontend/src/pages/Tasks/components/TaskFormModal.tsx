@@ -1,7 +1,10 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import Modal from "../../../components/common/Modal";
-import Button from "../../../components/common/Button";
+import FormInput from "../../../components/common/FormInput";
+import FormSelect, { SelectOption } from "../../../components/common/FormSelect";
+import FormActions from "../../../components/common/FormActions";
 import type { Task, Employee, User } from "../../../types";
+import { sanitizeText, validateTitle } from "../../../utils/validation";
 
 export interface TaskFormData {
   title: string;
@@ -23,13 +26,28 @@ interface TaskFormModalProps {
   isLoading: boolean;
 }
 
+const DEFAULT_DUE_DATE = "2026-08-26";
+
 const BLANK_TASK: TaskFormData = {
   title: "",
   assignee: "Unassigned",
   priority: "Medium",
   status: "TODO",
-  dueDate: "2026-08-26",
+  dueDate: DEFAULT_DUE_DATE,
 };
+
+const PRIORITY_OPTIONS: SelectOption[] = [
+  { value: "Low", label: "Low" },
+  { value: "Medium", label: "Medium" },
+  { value: "High", label: "High" },
+];
+
+const STATUS_OPTIONS: SelectOption[] = [
+  { value: "TODO", label: "To Do (Default)" },
+  { value: "In Progress", label: "In Progress" },
+  { value: "Pending", label: "Pending" },
+  { value: "Completed", label: "Completed" },
+];
 
 export function TaskFormModal({
   isOpen,
@@ -51,7 +69,7 @@ export function TaskFormModal({
         assignee: initialTask.assignedTo || initialTask.employee?.id || "Unassigned",
         priority: initialTask.priority || "Medium",
         status: initialTask.status || "TODO",
-        dueDate: initialTask.dueDate ? initialTask.dueDate.split("T")[0] : "2026-08-26",
+        dueDate: initialTask.dueDate ? initialTask.dueDate.split("T")[0] : DEFAULT_DUE_DATE,
       });
     } else {
       setFormData({
@@ -62,17 +80,17 @@ export function TaskFormModal({
     setFormErrors({});
   }, [initialTask, isOpen, isAdmin, currentUser]);
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const cleanValue = name === "title" ? sanitizeText(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: cleanValue }));
     if (formErrors[name]) setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
-    if (!formData.title.trim()) errors.title = "Task title is required";
+    const titleErr = validateTitle(formData.title, "Task title");
+    if (titleErr) errors.title = titleErr;
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -80,133 +98,77 @@ export function TaskFormModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    await onSubmit(formData);
+    await onSubmit({ ...formData, title: formData.title.trim() });
   };
 
   const isEditing = Boolean(initialTask);
+  const assigneeOptions: SelectOption[] = [
+    { value: "Unassigned", label: "Unassigned" },
+    ...employeeList.map((emp) => ({ value: emp.id, label: `${emp.name} (${emp.role})` })),
+  ];
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEditing ? `Edit Task` : "Create New Task"}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? "Edit Task" : "Create New Task"}>
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Task Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            placeholder="e.g. Build JWT authentication guard"
-            className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-              formErrors.title
-                ? "border-rose-500 focus:ring-rose-500"
-                : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-            }`}
-          />
-          {formErrors.title && (
-            <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-              {formErrors.title}
-            </p>
-          )}
-        </div>
+        <FormInput
+          label="Task Title"
+          required
+          name="title"
+          value={formData.title}
+          onChange={handleInputChange}
+          placeholder="Enter task title"
+          error={formErrors.title}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Assign To Employee
-            </label>
-            {isAdmin ? (
-              <select
-                name="assignee"
-                value={formData.assignee}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-              >
-                <option value="Unassigned">Unassigned</option>
-                {employeeList.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.role})
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                disabled
-                value={`${currentUser?.name || "You"} (Assigned to You)`}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-gray-100 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-              />
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Due Date
-            </label>
-            <input
-              type="date"
-              name="dueDate"
-              value={formData.dueDate}
+          {isAdmin ? (
+            <FormSelect
+              label="Assign To Employee"
+              name="assignee"
+              value={formData.assignee}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              options={assigneeOptions}
             />
-          </div>
+          ) : (
+            <FormInput
+              label="Assign To Employee"
+              disabled
+              value={`${currentUser?.name || "You"} (Assigned to You)`}
+            />
+          )}
+
+          <FormInput
+            label="Due Date"
+            type="date"
+            name="dueDate"
+            value={formData.dueDate}
+            onChange={handleInputChange}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Priority
-            </label>
-            <select
-              name="priority"
-              value={formData.priority}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Status
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            >
-              <option value="TODO">To Do (Default)</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
+          <FormSelect
+            label="Priority"
+            name="priority"
+            value={formData.priority}
+            onChange={handleInputChange}
+            options={PRIORITY_OPTIONS}
+          />
+          <FormSelect
+            label="Status"
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            options={STATUS_OPTIONS}
+          />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" disabled={isLoading} className="w-full sm:w-auto">
-            {isLoading
-              ? isEditing
-                ? "Updating..."
-                : "Creating..."
-              : isEditing
-              ? "Save Changes"
-              : "Create Task"}
-          </Button>
-        </div>
+        <FormActions
+          onCancel={onClose}
+          isLoading={isLoading}
+          submitLabel={isEditing ? "Save Changes" : "Create Task"}
+          loadingLabel={isEditing ? "Updating..." : "Creating..."}
+        />
       </form>
     </Modal>
   );

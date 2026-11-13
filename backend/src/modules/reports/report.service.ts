@@ -35,7 +35,7 @@ export class ReportService {
         return {
             jobId,
             status: "QUEUED",
-            message: "Your task export job is queued in RabbitMQ and compiling in the background.",
+            message: "Your task export has started and is being prepared in the background.",
         };
     }
 

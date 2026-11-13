@@ -41,10 +41,10 @@ export class AuthService {
         const { name, email, password, role } = data;
 
         if (!name || !name.trim()) {
-            throw new AppError("Full name is required", 400);
+            throw new AppError("Name is required", 400);
         }
         if (name.trim().length < 2) {
-            throw new AppError("Full name must be at least 2 characters long", 400);
+            throw new AppError("Name must be at least 2 characters long", 400);
         }
 
         const normalizedEmail = validateEmail(email);

@@ -73,7 +73,7 @@ export const startReportWorker = async () => {
                     // Notify user in real-time via Socket.IO
                     emitToUser(jobData.userId, "notification:report_ready", {
                         title: "Tasks CSV Report Ready!",
-                        message: `RabbitMQ AMQP worker compiled ${tasks.length} task records. Click below to download.`,
+                        message: `Your report with ${tasks.length} task records is ready. Click below to download.`,
                         data: result,
                     });
 

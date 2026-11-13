@@ -16,6 +16,11 @@ export interface NewPasswordFieldsProps {
   showConfirmToggle?: boolean;
   disabled?: boolean;
   showStrength?: boolean;
+  /**
+   * Container classes. Default stacks the two fields vertically.
+   * Pass "contents" to let both fields become items of a parent grid.
+   */
+  className?: string;
 }
 
 export const NewPasswordFields = memo(function NewPasswordFields({
@@ -27,14 +32,15 @@ export const NewPasswordFields = memo(function NewPasswordFields({
   confirmPasswordError,
   passwordLabel = "New Password",
   confirmPasswordLabel = "Confirm New Password",
-  passwordPlaceholder = "Enter new password",
-  confirmPasswordPlaceholder = "Repeat new password",
+  passwordPlaceholder = "Enter a new password (min. 6 characters)",
+  confirmPasswordPlaceholder = "Re-enter your new password",
   showConfirmToggle = false,
   disabled = false,
   showStrength = true,
+  className = "space-y-4",
 }: NewPasswordFieldsProps) {
   return (
-    <div className="space-y-4">
+    <div className={className}>
       {/* 1. New Password Field */}
       <div>
         <PasswordInput

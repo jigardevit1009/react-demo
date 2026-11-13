@@ -95,11 +95,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       dispatch(apiSlice.util.invalidateTags(["Tasks"]));
     });
 
-    // 4. RabbitMQ Background Report Completed Notification!
+    // 4. Background report export completed
     newSocket.on(
       "notification:report_ready",
       (payload: { title?: string; message?: string; data?: { downloadUrl?: string } }) => {
-        console.log("[Socket.IO] RabbitMQ report completed:", payload);
+        console.log("[Socket.IO] Report ready:", payload);
         setNotification({
           title: payload.title || "Analytics Report Ready!",
           message: payload.message || "Your background export is complete and ready to download.",

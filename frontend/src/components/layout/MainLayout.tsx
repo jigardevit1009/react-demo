@@ -26,7 +26,7 @@ function MainLayout({ children }: MainLayoutProps) {
           isOpenMobile={isMobileMenuOpen}
           onCloseMobile={() => setIsMobileMenuOpen(false)}
         />
-        <main className="flex-1 p-3.5 sm:p-6 md:p-8 max-w-7xl mx-auto w-full min-w-0">
+        <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full min-w-0">
           {children}
         </main>
       </div>

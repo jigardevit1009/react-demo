@@ -1,75 +1,67 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User as UserIcon, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User as UserIcon, Mail } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { loginSuccess } from "../../store/authSlice";
 import { useRegisterMutation } from "../../store/api/authApiSlice";
+import AuthLayout from "../../components/layout/AuthLayout";
+import Alert from "../../components/common/Alert";
 import Button from "../../components/common/Button";
-import PasswordStrengthMeter from "../../components/common/PasswordStrengthMeter";
+import FormInput from "../../components/common/FormInput";
+import NewPasswordFields from "../../components/common/NewPasswordFields";
 import { getErrorMessage } from "../../utils/error";
+import {
+  sanitizeText,
+  removeWhitespace,
+  validateName,
+  validateEmail,
+  validatePasswordPair,
+} from "../../utils/validation";
+
+interface RegisterForm {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const BLANK_FORM: RegisterForm = { name: "", email: "", password: "", confirmPassword: "" };
 
 function RegisterPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [registerApi, { isLoading }] = useRegisterMutation();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<RegisterForm>(BLANK_FORM);
+  const [formErrors, setFormErrors] = useState<Partial<RegisterForm>>({});
   const [generalError, setGeneralError] = useState("");
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
-    }
+    if (isAuthenticated) navigate("/dashboard", { replace: true });
   }, [isAuthenticated, navigate]);
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+  /** Updates one field and clears its error. Passwords are already whitespace-free. */
+  const setField = (field: keyof RegisterForm) => (value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) setFormErrors((prev) => ({ ...prev, [field]: "" }));
     if (generalError) setGeneralError("");
   };
 
   const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      errors.name = "Full Name is required";
-    } else if (formData.name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters";
-    }
-
-    if (!formData.email.trim()) {
-      errors.email = "Email Address is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.password) {
-      errors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
-    }
-
-    if (!formData.confirmPassword) {
-      errors.confirmPassword = "Confirm password is required";
-    } else if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
-    }
+    const errors: Partial<RegisterForm> = {};
+    const nameErr = validateName(formData.name);
+    if (nameErr) errors.name = nameErr;
+    const emailErr = validateEmail(formData.email);
+    if (emailErr) errors.email = emailErr;
+    const pwdErrors = validatePasswordPair(
+      formData.password,
+      formData.confirmPassword,
+      "Password",
+      "Confirm password",
+    );
+    if (pwdErrors.password) errors.password = pwdErrors.password;
+    if (pwdErrors.confirmPassword) errors.confirmPassword = pwdErrors.confirmPassword;
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -78,23 +70,15 @@ function RegisterPage() {
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
     setGeneralError("");
-
     if (!validateForm()) return;
 
     try {
       const response = await registerApi({
-        name: formData.name,
-        email: formData.email,
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
       }).unwrap();
-
-      dispatch(
-        loginSuccess({
-          user: response.data.user,
-          token: response.data.token,
-        })
-      );
-
+      dispatch(loginSuccess({ user: response.data.user, token: response.data.token }));
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
       console.error("Registration error:", err);
@@ -103,178 +87,76 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-3.5 sm:p-6 transition-colors">
-      <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-xl p-5 sm:p-8 transition-colors">
-        <div className="text-center mb-6">
+    <AuthLayout
+      header={
+        <>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             Create an <span className="text-blue-600">Account</span>
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Join the TaskTrack workspace
-          </p>
-        </div>
-
-        {generalError && (
-          <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-lg text-xs text-rose-700 dark:text-rose-300">
-            {generalError}
-          </div>
-        )}
-
-        <form onSubmit={handleRegister} noValidate className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="e.g. FirstName MiddleName LastName"
-                className={`w-full pl-10 pr-3.5 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                  formErrors.name
-                    ? "border-rose-500 focus:ring-rose-500"
-                    : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                }`}
-              />
-              <UserIcon className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
-            </div>
-            {formErrors.name && (
-              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-                {formErrors.name}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="abc@yopmail.com"
-                className={`w-full pl-10 pr-3.5 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                  formErrors.email
-                    ? "border-rose-500 focus:ring-rose-500"
-                    : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                }`}
-              />
-              <Mail className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
-            </div>
-            {formErrors.email && (
-              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-                {formErrors.email}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Password <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                className={`w-full pl-10 pr-10 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                  formErrors.password
-                    ? "border-rose-500 focus:ring-rose-500"
-                    : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                }`}
-              />
-              <Lock className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer focus:outline-none"
-                title={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            {formErrors.password && (
-              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-                {formErrors.password}
-              </p>
-            )}
-
-            {/* Live Password Strength Meter & Criteria Checklist */}
-            <PasswordStrengthMeter password={formData.password} showRules={true} />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Confirm Password <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                className={`w-full pl-10 pr-10 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
-                  formErrors.confirmPassword
-                    ? "border-rose-500 focus:ring-rose-500"
-                    : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                }`}
-              />
-              <Lock className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer focus:outline-none"
-                title={showConfirmPassword ? "Hide password" : "Show password"}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            {formErrors.confirmPassword && (
-              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-                {formErrors.confirmPassword}
-              </p>
-            )}
-          </div>
-
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isLoading}
-            className="w-full py-2.5 mt-2"
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Join the TaskTrack workspace</p>
+        </>
+      }
+      footer={
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline"
           >
-            {isLoading ? "Creating Account..." : "Create Account"}
-          </Button>
-        </form>
+            Sign In
+          </Link>
+        </p>
+      }
+    >
+      <Alert variant="error" className="mb-4">
+        {generalError}
+      </Alert>
 
-        <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-center">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline"
-            >
-              Sign In
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+      <form onSubmit={handleRegister} noValidate className="space-y-4">
+        <FormInput
+          label="Name"
+          required
+          name="name"
+          icon={UserIcon}
+          autoComplete="name"
+          value={formData.name}
+          onChange={(e) => setField("name")(sanitizeText(e.target.value))}
+          placeholder="Enter your name"
+          error={formErrors.name}
+        />
+
+        <FormInput
+          label="Email"
+          required
+          type="email"
+          name="email"
+          icon={Mail}
+          autoComplete="email"
+          value={formData.email}
+          onChange={(e) => setField("email")(removeWhitespace(e.target.value))}
+          placeholder="Enter your email address"
+          error={formErrors.email}
+        />
+
+        <NewPasswordFields
+          password={formData.password}
+          confirmPassword={formData.confirmPassword}
+          onPasswordChange={setField("password")}
+          onConfirmPasswordChange={setField("confirmPassword")}
+          passwordError={formErrors.password}
+          confirmPasswordError={formErrors.confirmPassword}
+          passwordLabel="Password"
+          confirmPasswordLabel="Confirm Password"
+          passwordPlaceholder="Create a password (min. 6 characters)"
+          confirmPasswordPlaceholder="Re-enter your password"
+          showConfirmToggle
+        />
+
+        <Button type="submit" variant="primary" disabled={isLoading} className="w-full py-2.5 mt-2">
+          {isLoading ? "Creating Account..." : "Create Account"}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }
 

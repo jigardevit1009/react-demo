@@ -11,6 +11,10 @@ interface ButtonProps {
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
   className?: string;
+  /** Tooltip text — recommended for icon-only buttons */
+  title?: string;
+  /** Accessible label — required for icon-only buttons */
+  ariaLabel?: string;
 }
 
 function Button({
@@ -21,6 +25,8 @@ function Button({
   disabled = false,
   type = "button",
   className = "",
+  title,
+  ariaLabel,
 }: ButtonProps) {
   const baseStyles =
     "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
@@ -44,6 +50,8 @@ function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
+      title={title}
+      aria-label={ariaLabel ?? title}
       className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
     >
       {children}

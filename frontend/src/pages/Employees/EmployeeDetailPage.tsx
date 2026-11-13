@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Card from "../../components/common/Card";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
+import { LoadingState, ErrorState } from "../../components/common/DataState";
 import { useGetEmployeeByIdQuery } from "../../store/api/employeeApiSlice";
 import { getEmployeeStatusVariant } from "../../utils/variants";
 import { getErrorMessage } from "../../utils/error";
@@ -13,14 +14,7 @@ function EmployeeDetailPage() {
 
   const { data: employee, isLoading, isError, error } = useGetEmployeeByIdQuery(id);
 
-  if (isLoading) {
-    return (
-      <div className="py-12 text-center text-gray-500">
-        <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
-        <p className="text-sm mt-2 font-medium">Fetching employee profile...</p>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingState message="Fetching employee profile..." />;
 
   if (isError || !employee) {
     return (
@@ -28,12 +22,10 @@ function EmployeeDetailPage() {
         <Button size="sm" variant="outline" onClick={() => navigate("/employees")}>
           ← Back to Employees
         </Button>
-        <div className="p-6 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-xl text-red-700 dark:text-red-300">
-          <p className="font-semibold text-sm">Employee {id} not found</p>
-          <p className="text-xs text-red-500 dark:text-red-400 mt-1">
-            {getErrorMessage(error, "Record may have been deleted.")}
-          </p>
-        </div>
+        <ErrorState
+          title={`Employee ${id} not found`}
+          message={getErrorMessage(error, "Record may have been deleted.")}
+        />
       </div>
     );
   }

@@ -6,9 +6,14 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /**
+   * Close when clicking the dark backdrop. Off by default so users don't lose
+   * form input by clicking outside — the modal closes only via the X / Cancel buttons.
+   */
+  closeOnBackdropClick?: boolean;
 }
 
-function Modal({ isOpen, onClose, title, children }: ModalProps) {
+function Modal({ isOpen, onClose, title, children, closeOnBackdropClick = false }: ModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -16,11 +21,16 @@ function Modal({ isOpen, onClose, title, children }: ModalProps) {
       {/* 1. Backdrop overlay */}
       <div
         className="fixed inset-0 bg-gray-900/60 dark:bg-black/70 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
+        onClick={closeOnBackdropClick ? onClose : undefined}
+        aria-hidden="true"
       />
 
       {/* 2. Modal Box */}
-      <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-150 text-gray-900 dark:text-gray-100">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-150 text-gray-900 dark:text-gray-100">
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate pr-2">
@@ -29,6 +39,8 @@ function Modal({ isOpen, onClose, title, children }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close"
+            title="Close"
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg p-1.5 transition-colors cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
           >
             <X className="w-4 h-4" />

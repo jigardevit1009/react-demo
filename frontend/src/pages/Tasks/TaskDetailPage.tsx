@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import { LoadingState, ErrorState } from "../../components/common/DataState";
 import { TaskStatusBadge, TaskPriorityBadge } from "../../components/common/TaskBadges";
 import { useGetTaskByIdQuery } from "../../store/api/taskApiSlice";
 import { getErrorMessage } from "../../utils/error";
@@ -12,14 +13,7 @@ function TaskDetailPage() {
 
   const { data: task, isLoading, isError, error } = useGetTaskByIdQuery(id);
 
-  if (isLoading) {
-    return (
-      <div className="py-12 text-center text-gray-500">
-        <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
-        <p className="text-sm mt-2 font-medium">Loading task details...</p>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingState message="Loading task details..." />;
 
   if (isError || !task) {
     return (
@@ -27,12 +21,10 @@ function TaskDetailPage() {
         <Button size="sm" variant="outline" onClick={() => navigate("/tasks")}>
           ← Back to Tasks
         </Button>
-        <div className="p-6 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-xl text-red-700 dark:text-red-300">
-          <p className="font-semibold text-sm">Task {id} not found</p>
-          <p className="text-xs text-red-500 dark:text-red-400 mt-1">
-            {getErrorMessage(error, "Task record may have been deleted.")}
-          </p>
-        </div>
+        <ErrorState
+          title={`Task ${id} not found`}
+          message={getErrorMessage(error, "Task record may have been deleted.")}
+        />
       </div>
     );
   }

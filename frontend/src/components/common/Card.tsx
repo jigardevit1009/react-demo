@@ -7,9 +7,11 @@ interface CardProps {
   badge?: string;
   children: ReactNode;
   className?: string;
+  /** Optional content rendered on the right side of the header (e.g. filters) */
+  headerActions?: ReactNode;
 }
 
-function Card({ title, subtitle, children, className = "" }: CardProps) {
+function Card({ title, subtitle, children, className = "", headerActions }: CardProps) {
   const { isDark } = useTheme();
 
   return (
@@ -21,8 +23,8 @@ function Card({ title, subtitle, children, className = "" }: CardProps) {
       } ${className}`}
     >
       {title && (
-        <div className="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
-          <div>
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+          <div className="shrink-0">
             {title && (
               <h3
                 className={`text-base font-bold ${isDark ? "text-white" : "text-gray-800"}`}
@@ -34,6 +36,7 @@ function Card({ title, subtitle, children, className = "" }: CardProps) {
               <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
             )}
           </div>
+          {headerActions && <div className="w-full xl:w-auto min-w-0">{headerActions}</div>}
         </div>
       )}
       <div>{children}</div>
